@@ -1,4 +1,3 @@
-import ThemeButton from '#/components/theme-button'
 import { createFileRoute } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/_app/dashboard')({
@@ -6,5 +5,6 @@ export const Route = createFileRoute('/_app/dashboard')({
 })
 
 function RouteComponent() {
-  return <div>Hello "/_app/dashboard"!  <ThemeButton/></div>
+  return <div>
+  </div>
 }
