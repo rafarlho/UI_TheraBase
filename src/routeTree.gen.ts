@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppDashboardRouteImport } from './routes/_app/dashboard'
+import { Route as AppPatientsRouteImport } from './routes/_app/patients'
 import { Route as AppScheduleRouteImport } from './routes/_app/schedule'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 
@@ -21,6 +22,11 @@ const AppRoute = AppRouteImport.update({
 const AppDashboardRoute = AppDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppPatientsRoute = AppPatientsRouteImport.update({
+  id: '/patients',
+  path: '/patients',
   getParentRoute: () => AppRoute,
 } as any)
 const AppScheduleRoute = AppScheduleRouteImport.update({
@@ -37,12 +43,14 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof AppRouteWithChildren
   '/dashboard': typeof AppDashboardRoute
+  '/patients': typeof AppPatientsRoute
   '/schedule': typeof AppScheduleRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof AppRouteWithChildren
   '/dashboard': typeof AppDashboardRoute
+  '/patients': typeof AppPatientsRoute
   '/schedule': typeof AppScheduleRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
@@ -50,16 +58,22 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof AppRouteWithChildren
   '/_app/dashboard': typeof AppDashboardRoute
+  '/_app/patients': typeof AppPatientsRoute
   '/_app/schedule': typeof AppScheduleRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/dashboard' | '/schedule' | '/api/auth/$'
+  fullPaths: '/' | '/dashboard' | '/patients' | '/schedule' | '/api/auth/$'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/dashboard' | '/schedule' | '/api/auth/$'
+  to: '/' | '/dashboard' | '/patients' | '/schedule' | '/api/auth/$'
   id:
-    '__root__' | '/_app' | '/_app/dashboard' | '/_app/schedule' | '/api/auth/$'
+    | '__root__'
+    | '/_app'
+    | '/_app/dashboard'
+    | '/_app/patients'
+    | '/_app/schedule'
+    | '/api/auth/$'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -83,6 +97,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppDashboardRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/patients': {
+      id: '/_app/patients'
+      path: '/patients'
+      fullPath: '/patients'
+      preLoaderRoute: typeof AppPatientsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/schedule': {
       id: '/_app/schedule'
       path: '/schedule'
@@ -102,11 +123,13 @@ declare module '@tanstack/react-router' {
 
 interface AppRouteChildren {
   AppDashboardRoute: typeof AppDashboardRoute
+  AppPatientsRoute: typeof AppPatientsRoute
   AppScheduleRoute: typeof AppScheduleRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
   AppDashboardRoute: AppDashboardRoute,
+  AppPatientsRoute: AppPatientsRoute,
   AppScheduleRoute: AppScheduleRoute,
 }
 

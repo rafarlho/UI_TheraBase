@@ -1,4 +1,4 @@
-import { ChevronsLeft, ChevronsRight, Clock, Home, Moon, Sun } from "lucide-react"
+import { ChevronsLeft, ChevronsRight, Clock, FileUser, Home, Moon, Sun } from "lucide-react"
 import { useTheme } from "./theme-provider"
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuAction, SidebarMenuBadge, SidebarMenuButton, SidebarMenuItem, SidebarTrigger, useSidebar } from "./ui/sidebar"
 import DB_Logo from "@/assets/DB_Logo.svg"
@@ -35,6 +35,12 @@ function Sidenav() {
                                     <span>Agenda</span>
                                 </Link>
                             </SidebarMenuButton>
+                            <SidebarMenuButton asChild>
+                                <Link to={"/patients"}>
+                                    <FileUser/>
+                                    <span>Pacientes</span>
+                                </Link>
+                            </SidebarMenuButton>
                         </SidebarMenuItem>
                     </SidebarMenu>
                 </SidebarGroup>
@@ -43,7 +49,6 @@ function Sidenav() {
                     <SidebarMenu>
                         <SidebarMenuItem>
                             <SidebarMenuButton onClick={() => (setTheme(resolvedTheme === "light" ? "dark": "light"))}>
-                                
                                     {resolvedTheme === "light" ? <Moon/> : <Sun/>}
                                     {resolvedTheme === "light" ? "Mudar para escuro" : "Mudar para claro"}
                             </SidebarMenuButton>

@@ -1,7 +1,7 @@
 import { db } from "#/db";
-import { person, therapist, therapistPerson } from "#/db/schema";
+import { person, therapistPerson } from "#/db/schema";
 import type { NewPerson, Person } from "#/entities/person.entity";
-import { and, eq } from "drizzle-orm";
+import { and, eq, ilike } from "drizzle-orm";
 
 export const personRepository = {
     
@@ -12,11 +12,39 @@ export const personRepository = {
         )})
     },
 
+    async findByName(name:string): Promise <Person | undefined> {
+        return db.query.person.findFirst({where: and(
+            ilike(person.name, name), 
+            eq(person.active, true)
+        )})
+    },
+
     async getPatientsByTherapistId(therapistId:string) : Promise<Person[]> {
         return db.select({person})
             .from(person)
             .innerJoin(therapistPerson, eq(person.id, therapistPerson.personId))
-            .where(eq(therapistPerson.therapistId, therapistId))
+            .where(
+                and(
+                    eq(therapistPerson.therapistId, therapistId),
+                    eq(therapistPerson.active, true)
+                    
+                ) 
+            )
+            .then(rows => rows.map(r=>r.person))
+    },
+
+    async getPatientsByTherapistIdAndName(therapistId:string, name?: string) : Promise<Person[]> {
+        return db.select({person})
+            .from(person)
+            .innerJoin(therapistPerson, eq(person.id, therapistPerson.personId))
+            .where(
+                and(
+                    eq(therapistPerson.therapistId, therapistId),
+                    eq(therapistPerson.active, true),
+                    ilike(person.name, `%${name}%`)
+                    
+                ) 
+            )
             .then(rows => rows.map(r=>r.person))
     },
 

@@ -1,15 +1,22 @@
 import { db } from "#/db";
 import { appointment, therapistPerson } from "#/db/schema";
 import type { NewAppointment, Appointment } from "#/entities/appointment.entity";
-import { and, eq } from "drizzle-orm";
+import { and, eq, gte, lte } from "drizzle-orm";
+import { endOfToday, startOfToday } from "date-fns";
 
-export const therapistAppointmentRepository = {
+export const appointmentRepository = {
 
     async findTodayByTherapist(therapistId: string): Promise<Appointment[]> {
         return db.select({appointment})
             .from(appointment)
             .innerJoin(therapistPerson, eq(appointment.therapistPersonId,therapistPerson.id))
-            .where(eq(therapistPerson.therapistId, therapistId))
+            .where(
+                and(
+                    eq(therapistPerson.therapistId, therapistId),
+                    gte(appointment.date, startOfToday()),
+                    lte(appointment.date, endOfToday()),
+                ),
+            )
             .then((rows) => rows.map(r => r.appointment))
     },
 

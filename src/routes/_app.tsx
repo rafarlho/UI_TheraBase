@@ -1,6 +1,7 @@
 import Sidenav from '#/components/sidenav'
 import { ThemeProvider } from '#/components/theme-provider'
 import { SidebarProvider, SidebarTrigger } from '#/components/ui/sidebar'
+import { Toaster } from '#/components/ui/sonner'
 import { TooltipProvider } from '#/components/ui/tooltip'
 import { createFileRoute, Outlet } from '@tanstack/react-router'
 
@@ -12,8 +13,9 @@ function Home() {
       <TooltipProvider>
         <SidebarProvider>
           <Sidenav/>
-          <main>
+          <main className='flex grow'>
             <Outlet/>
+            <Toaster/>
           </main>
         </SidebarProvider>
       </TooltipProvider>
