@@ -6,6 +6,7 @@ export const statusEnum = pgEnum("status", ["not_started", "finished", "canceled
 export const therapist = pgTable("therapist", {
   id: uuid().primaryKey().defaultRandom(),
   name: varchar({length:255}).notNull(),
+  email: varchar({length: 255}).notNull().unique(),
   active: boolean().notNull().default(true),
   createdAt: timestamp("created_at",{withTimezone: true}).defaultNow().notNull(),
   updatedAt: timestamp("updated_at",{withTimezone: true}).defaultNow().notNull().$onUpdate(() => new Date()),
