@@ -14,6 +14,10 @@ export const getTherapistPatientsByName = createServerFn({method: "GET"})
         return personRepository.getPatientsByTherapistIdAndName(data.therapistId, data.name)
     })
 
+export const getPatientOptions = createServerFn({method: "GET"})
+    .validator(z.object({ therapistId: z.string().min(1) }))
+    .handler(({data}) => personRepository.findPatientOptionsByTherapist(data.therapistId))
+
 
 export const getPersonByName = createServerFn({method: "GET"})
     .validator(z.object({name: z.string().min(1)}))

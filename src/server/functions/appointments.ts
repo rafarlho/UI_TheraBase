@@ -31,3 +31,15 @@ export const updateAppointment = createServerFn({method: "POST"})
     .handler(({data}) => {
         return appointmentRepository.update(data.id, data)
     })
+
+export const createAppointment = createServerFn({method: "POST"})
+    .validator(z.object({
+        location:  z.string().min(1),
+        date: z.date(),
+        duration: z.number(),
+        therapistPersonId: z.string().min(1),
+        notes: z.string().optional(),
+    }))
+    .handler(({data}) => {
+        return appointmentRepository.create(data)
+    })

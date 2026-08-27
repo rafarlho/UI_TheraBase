@@ -9,7 +9,7 @@ import { useServerFn } from '@tanstack/react-start'
 import { useEffect, useMemo, useState } from 'react'
 import { Input } from '#/components/ui/input'
 import { Button } from '#/components/ui/button'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '#/components/ui/dialog'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '#/components/ui/dialog'
 import { addPatientToTherapistByName } from '#/services/patients'
 import { removePatientFromTherapist } from '#/server/functions/therapist-person'
 import { toast } from 'sonner'
@@ -34,7 +34,6 @@ function RouteComponent() {
     const [selectedPatientToRemove, setSelectedPatientToRemove] = useState<string|null>(null)
 
     const updatePatientFn = useServerFn(updatePatient)
-    const removePatientFromTherapistFn = useServerFn(removePatientFromTherapist)
     const getCurrentTherapistPatientsFn = useServerFn(getTherapistPatientsByName)
     const therapistId = "acf18675-88c0-4b6b-a880-b9f73400a2f0"
 

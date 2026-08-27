@@ -19,6 +19,18 @@ export const personRepository = {
         )})
     },
 
+    async findPatientOptionsByTherapist(therapistId: string): Promise<{ id: string; name: string }[]> {
+        return db.select({ id: therapistPerson.id, name: person.name })
+            .from(therapistPerson)
+            .innerJoin(person, eq(therapistPerson.personId, person.id))
+            .where(
+                and(
+                    eq(therapistPerson.therapistId, therapistId),
+                    eq(therapistPerson.active, true)
+                )
+            )
+    },
+
     async getPatientsByTherapistId(therapistId:string) : Promise<Person[]> {
         return db.select({person})
             .from(person)
