@@ -33,10 +33,8 @@ function CreateDialog({open, setOpen, patientOptions, refreshData}: CreateDialog
                 <AppointmentForm
                     patientOptions={patientOptions}
                     onSubmit={createAppointments}
+                    closeDialog={() => setOpen(false)}
                 />
-                <DialogFooter>
-                    <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
-                </DialogFooter>
             </DialogContent>
         </Dialog>
     )

@@ -75,19 +75,22 @@ function RouteComponent() {
           onDateChange={console.log}
           onViewChange={getAppointmentsByRange}
           apiRef={apiRef}
+          interactions={{
+            drag: false,
+            resize: false,
+            selectSlot: true,
+          }}
           defaultView="day"
-          
           className="h-full w-full"
-          >
+        >
           <div className='flex justify-between'>
-
-          <EventCalendarNav className="min-w-0 "></EventCalendarNav>
-          <EventCalendarToolbar>
-            <Button size="sm" onClick={()=> setOpenCreateDialog(true)}>
-              <PlusIcon  className="size-4" aria-hidden="true" />
-              New event
-            </Button>
-          </EventCalendarToolbar>
+            <EventCalendarNav className="min-w-0 "></EventCalendarNav>
+            <EventCalendarToolbar>
+              <Button size="sm" onClick={()=> setOpenCreateDialog(true)}>
+                <PlusIcon  className="size-4" aria-hidden="true" />
+                Nova marcação
+              </Button>
+            </EventCalendarToolbar>
           </div>
           <EventCalendarContent/>
         </EventCalendar>

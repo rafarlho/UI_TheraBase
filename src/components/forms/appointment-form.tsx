@@ -25,9 +25,10 @@ type AppointementFormProps = {
     defaultValues?: AppointementFormValues,
     onSubmit: (values:AppointementFormValues) => void ,
     patientOptions: { id: string; name: string }[],
+    closeDialog:() => void
 }
 
-function AppointmentForm({defaultValues, onSubmit, patientOptions}: AppointementFormProps) {
+function AppointmentForm({defaultValues, onSubmit, patientOptions, closeDialog}: AppointementFormProps) {
     
     if(!defaultValues)
         defaultValues = {
@@ -130,7 +131,10 @@ function AppointmentForm({defaultValues, onSubmit, patientOptions}: Appointement
                         </FormItem>
                     )}
                 />
-                <Button type="submit"><Save/> Guardar</Button>
+                <div className=" flex gap-2 justify-end">
+                    <Button type="button" variant="outline" onClick={closeDialog}>Cancelar</Button>
+                    <Button type="submit"><Save/> Guardar</Button>
+                </div>
             </form>
         </Form>
     )
