@@ -24,6 +24,6 @@ export const addPatientToTherapistByName =async (therapistId: string, name:strin
     }
 
     toast.warning(`O paciente ${person.name} já está associado a ti`)
-    throw new Error("Patient already associated with therapist")
+    throw new Error("Patient already associated with therapistdrone fail")
 
 }

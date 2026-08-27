@@ -1,8 +1,8 @@
 import { db } from "#/db";
 import { appointment, therapistPerson } from "#/db/schema";
-import type { NewAppointment, Appointment } from "#/entities/appointment.entity";
+import type { NewAppointment, Appointment, AppointmentWithPerson } from "#/entities/appointment.entity";
 import { and, eq, gte, lte } from "drizzle-orm";
-import { endOfToday, startOfToday } from "date-fns";
+import { endOfDay, endOfToday, startOfDay, startOfToday } from "date-fns";
 
 export const appointmentRepository = {
 
@@ -18,6 +18,21 @@ export const appointmentRepository = {
                 ),
             )
             .then((rows) => rows.map(r => r.appointment))
+    },
+
+    async findByTherapistAndDate(therapistId: string, startDate: Date, endDate: Date): Promise<AppointmentWithPerson[]> {
+        return db.query.appointment.findMany({
+            where : and(
+                gte(appointment.date, startOfDay(startDate)),
+                lte(appointment.date, endOfDay(endDate)),
+            ),
+            with: {
+                therapistPerson: {
+                    where: eq(therapistPerson.therapistId, therapistId),
+                    with: {person:true}
+                }
+            }
+        })
     },
 
     async findByTherapistPersonId(therapistPersonId: string): Promise<Appointment[]> {
