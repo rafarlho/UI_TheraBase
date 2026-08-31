@@ -12,8 +12,9 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppDashboardRouteImport } from './routes/_app/dashboard'
 import { Route as AppPatientsRouteImport } from './routes/_app/patients'
-import { Route as AppScheduleRouteImport } from './routes/_app/schedule'
+import { Route as AppScheduleIndexRouteImport } from './routes/_app/schedule/index'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as AppScheduleIdIndexRouteImport } from './routes/_app/schedule/$id/index'
 
 const AppRoute = AppRouteImport.update({
   id: '/_app',
@@ -29,9 +30,9 @@ const AppPatientsRoute = AppPatientsRouteImport.update({
   path: '/patients',
   getParentRoute: () => AppRoute,
 } as any)
-const AppScheduleRoute = AppScheduleRouteImport.update({
-  id: '/schedule',
-  path: '/schedule',
+const AppScheduleIndexRoute = AppScheduleIndexRouteImport.update({
+  id: '/schedule/',
+  path: '/schedule/',
   getParentRoute: () => AppRoute,
 } as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
@@ -39,41 +40,62 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppScheduleIdIndexRoute = AppScheduleIdIndexRouteImport.update({
+  id: '/schedule/$id/',
+  path: '/schedule/$id/',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AppRouteWithChildren
   '/dashboard': typeof AppDashboardRoute
   '/patients': typeof AppPatientsRoute
-  '/schedule': typeof AppScheduleRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/schedule/': typeof AppScheduleIndexRoute
+  '/schedule/$id/': typeof AppScheduleIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof AppRouteWithChildren
   '/dashboard': typeof AppDashboardRoute
   '/patients': typeof AppPatientsRoute
-  '/schedule': typeof AppScheduleRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/schedule': typeof AppScheduleIndexRoute
+  '/schedule/$id': typeof AppScheduleIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof AppRouteWithChildren
   '/_app/dashboard': typeof AppDashboardRoute
   '/_app/patients': typeof AppPatientsRoute
-  '/_app/schedule': typeof AppScheduleRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/_app/schedule/': typeof AppScheduleIndexRoute
+  '/_app/schedule/$id/': typeof AppScheduleIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/dashboard' | '/patients' | '/schedule' | '/api/auth/$'
+  fullPaths:
+    | '/'
+    | '/dashboard'
+    | '/patients'
+    | '/api/auth/$'
+    | '/schedule/'
+    | '/schedule/$id/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/dashboard' | '/patients' | '/schedule' | '/api/auth/$'
+  to:
+    | '/'
+    | '/dashboard'
+    | '/patients'
+    | '/api/auth/$'
+    | '/schedule'
+    | '/schedule/$id'
   id:
     | '__root__'
     | '/_app'
     | '/_app/dashboard'
     | '/_app/patients'
-    | '/_app/schedule'
     | '/api/auth/$'
+    | '/_app/schedule/'
+    | '/_app/schedule/$id/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -104,11 +126,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppPatientsRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/schedule': {
-      id: '/_app/schedule'
+    '/_app/schedule/': {
+      id: '/_app/schedule/'
       path: '/schedule'
-      fullPath: '/schedule'
-      preLoaderRoute: typeof AppScheduleRouteImport
+      fullPath: '/schedule/'
+      preLoaderRoute: typeof AppScheduleIndexRouteImport
       parentRoute: typeof AppRoute
     }
     '/api/auth/$': {
@@ -118,19 +140,28 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_app/schedule/$id/': {
+      id: '/_app/schedule/$id/'
+      path: '/schedule/$id'
+      fullPath: '/schedule/$id/'
+      preLoaderRoute: typeof AppScheduleIdIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
 interface AppRouteChildren {
   AppDashboardRoute: typeof AppDashboardRoute
   AppPatientsRoute: typeof AppPatientsRoute
-  AppScheduleRoute: typeof AppScheduleRoute
+  AppScheduleIndexRoute: typeof AppScheduleIndexRoute
+  AppScheduleIdIndexRoute: typeof AppScheduleIdIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
   AppDashboardRoute: AppDashboardRoute,
   AppPatientsRoute: AppPatientsRoute,
-  AppScheduleRoute: AppScheduleRoute,
+  AppScheduleIndexRoute: AppScheduleIndexRoute,
+  AppScheduleIdIndexRoute: AppScheduleIdIndexRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)

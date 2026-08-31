@@ -1,8 +1,8 @@
 import { EventCalendar } from '#/components/reui/event-calendar/event-calendar'
 import type{ EventCalendarApi } from '#/components/reui/event-calendar/event-calendar'
 import { EventCalendarContent } from '#/components/reui/event-calendar/event-calendar-content'
-import { EventCalendarNav, EventCalendarToolbar } from '#/components/reui/event-calendar/event-calendar-nav'
-import type { CalendarEvent, CalendarView } from '#/components/reui/event-calendar/event-calendar-types'
+import { EventCalendarDatePicker, EventCalendarNav, EventCalendarToolbar } from '#/components/reui/event-calendar/event-calendar-nav'
+import type { CalendarEvent, EventCalendarOccurrence } from '#/components/reui/event-calendar/event-calendar-types'
 import CreateDialog from '#/components/schedule/create-dialog'
 import { Button } from '#/components/ui/button'
 import type { AppointmentWithPerson } from '#/entities/appointment.entity'
@@ -11,11 +11,14 @@ import { getPatientOptions } from '#/server/functions/persons'
 import { createFileRoute } from '@tanstack/react-router'
 import { useServerFn } from '@tanstack/react-start'
 import { addMinutes, differenceInMinutes, isEqual } from 'date-fns'
-import { PlusIcon } from 'lucide-react'
+import { CalendarX2, ClipboardClock, MapPin, PlusIcon, SquareCheckBig } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
+import { pt } from "date-fns/locale"
+import { ptI18n } from '#/utils/calendar-portuguese'
+import { Badge } from '#/components/ui/badge'
 
 const therapistId = "acf18675-88c0-4b6b-a880-b9f73400a2f0"
-export const Route = createFileRoute('/_app/schedule')({
+export const Route = createFileRoute('/_app/schedule/')({
   component: RouteComponent,
   loader: async () => {
     const [appointementsLoaded, patientsLoaded] = await Promise.all([
@@ -69,10 +72,12 @@ function RouteComponent() {
       <div className='h-dvh p-5 flex flex-col min-w-0 overflow-hidden gap-3 w-full'>
         <h1 className='font-heading font-bold text-2xl'> Agenda</h1>
         <EventCalendar
+          locale={pt}
+          i18n={ptI18n}
           events={appointements}
-          onEventClick={console.log}
+          onEventClick={(e: any)=>console.log(e)}
           onEventsChange={handleEventChange}
-          onDateChange={console.log}
+          onDateChange={getAppointmentsByRange}
           onViewChange={getAppointmentsByRange}
           apiRef={apiRef}
           interactions={{
@@ -82,10 +87,13 @@ function RouteComponent() {
           }}
           defaultView="day"
           className="h-full w-full"
+          renderEvent={(props) => renderCalendarEvent(props.occurrence, props.view)}
         >
           <div className='flex justify-between'>
-            <EventCalendarNav className="min-w-0 "></EventCalendarNav>
+            <EventCalendarNav className="min-w-0">
+            </EventCalendarNav>
             <EventCalendarToolbar>
+              <EventCalendarDatePicker/>
               <Button size="sm" onClick={()=> setOpenCreateDialog(true)}>
                 <PlusIcon  className="size-4" aria-hidden="true" />
                 Nova marcação
@@ -97,6 +105,34 @@ function RouteComponent() {
       </div>
     </>
   )
+}
+
+function renderCalendarEvent(occurrence: EventCalendarOccurrence<AppointmentWithPerson>, view: string){
+  const statusLabels: Record<AppointmentWithPerson["status"], {name: string, icon:React.ReactElement}> = {
+    not_started:{name: 'Por iniciar', icon:<ClipboardClock/> },
+    canceled: {name: 'Cancelada', icon:<CalendarX2/> },
+    finished: {name: 'Terminada', icon:<SquareCheckBig/> },
+  }
+  const appointment = occurrence.event.data
+  return <div className='flex flex-row justify-between py-1 w-full overflow-hidden'>
+      <div className='flex flex-col'>
+
+      <span className="font-medium truncate">{appointment!.therapistPerson.person.name}</span>
+      {view !== "month" && (
+        <>
+          <span className="flex items-center gap-1 text-[10px] text-muted-foreground truncate">
+            <MapPin className="size-3 shrink-0" />
+            {appointment!.location}
+          </span>
+        </>
+      )}
+      </div>
+      <Badge className="w-fit text-[10px]" variant={appointment?.status === 'not_started' ? 'secondary' : appointment?.status === 'canceled' ? "destructive" : 'default'}>
+        {statusLabels[appointment!.status].icon}
+        {view !== "month" && view !== "week" && statusLabels[appointment!.status].name}
+      </Badge>
+      
+  </div>
 }
 
 function parseAppointmentToCalendarEvent(appointment: AppointmentWithPerson): CalendarEvent<AppointmentWithPerson> {

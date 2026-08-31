@@ -23,9 +23,22 @@ function Tooltip({
 }
 
 function TooltipTrigger({
+  render,
+  children,
   ...props
-}: React.ComponentProps<typeof TooltipPrimitive.Trigger>) {
-  return <TooltipPrimitive.Trigger data-slot="tooltip-trigger" {...props} />
+}: Omit<React.ComponentProps<typeof TooltipPrimitive.Trigger>, "children"> & {
+  render?: React.ReactElement
+  children?: React.ReactNode
+}) {
+  return (
+    <TooltipPrimitive.Trigger
+      data-slot="tooltip-trigger"
+      asChild={render !== undefined || props.asChild}
+      {...props}
+    >
+      {render ?? children}
+    </TooltipPrimitive.Trigger>
+  )
 }
 
 function TooltipContent({
