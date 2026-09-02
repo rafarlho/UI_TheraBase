@@ -4,6 +4,9 @@ import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupLabel
 import DB_Logo from "@/assets/DB_Logo.svg"
 import DB_Logo_White from "@/assets/DB_Logo_White.svg"
 import { Link } from "@tanstack/react-router"
+import BetterAuthHeader from "#/integrations/better-auth/header-user"
+import { getCurrentTherapist, getCurrentUser } from "#/server/auth-test"
+import { createMyTherapistProfile } from "#/server/functions/therapist"
 
 function Sidenav() {
     const { open, toggleSidebar} = useSidebar()
@@ -58,6 +61,41 @@ function Sidenav() {
             </SidebarContent>
             <SidebarFooter>
                 <div>
+                    <button
+  onClick={async () => {
+    const user = await getCurrentUser()
+    console.log(user)
+    const therapist = await getCurrentTherapist()
+    console.log(therapist)
+
+  }}
+>
+  Test server session
+</button>
+<button
+  onClick={async () => {
+    try {
+      const user = await getCurrentUser()
+      console.log('USER:', user)
+
+      const therapist = await createMyTherapistProfile({
+        data: {
+          name: user.name,
+        },
+      })
+
+      console.log('THERAPIST CREATED:', therapist)
+
+      const currentTherapist = await getCurrentTherapist()
+      console.log('CURRENT THERAPIST:', currentTherapist)
+    } catch (error) {
+      console.error(error)
+    }
+  }}
+>
+  Create/test therapist
+</button>
+                    <BetterAuthHeader/>
                     <SidebarMenuButton onClick={toggleSidebar} className="flex justify-end">
                         <span>Ocultar</span>
                         {open ? <ChevronsLeft/> : <ChevronsRight/>}

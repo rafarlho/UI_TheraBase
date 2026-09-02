@@ -2,19 +2,18 @@ import { createPerson, getPersonByName  } from "#/server/functions/persons"
 import { addPatientToTherapist, enableTherapistPerson, getTherapistPatientsById } from "#/server/functions/therapist-person"
 import { toast } from "sonner"
 
-export const addPatientToTherapistByName =async (therapistId: string, name:string) => {
+export const addPatientToTherapistByName =async (name:string) => {
     let person = await getPersonByName({data:{name}}) 
-
     if(!person)  {
         person = await createPerson({data:{name}})
-        await addPatientToTherapist({data:{therapistId, personId: person.id}})
+        await addPatientToTherapist({data:{personId: person.id}})
         return
     }
     
-    const currentMatch = await getTherapistPatientsById({data:{therapistId, personId: person.id}})
+    const currentMatch = await getTherapistPatientsById({data:{personId: person.id}})
     
     if(!currentMatch) {
-        await addPatientToTherapist({data:{therapistId, personId: person.id}})
+        await addPatientToTherapist({data:{personId: person.id}})
         return
     }
 

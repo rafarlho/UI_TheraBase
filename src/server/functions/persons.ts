@@ -1,22 +1,26 @@
 import { personRepository } from "#/repositories/person.repository";
 import { createServerFn } from "@tanstack/react-start";
 import z from "zod";
+import { requireTherapist } from "../auth";
 
 export const getTherapistPatients = createServerFn({method: "GET"})
-    .validator(z.object({therapistId: z.string().min(1)}))
-    .handler(({data}) => {
-        return personRepository.getPatientsByTherapistId(data.therapistId)
+    .handler(async () => {
+        const therapist = await requireTherapist()
+        return personRepository.getPatientsByTherapistId(therapist.id)
     })
 
 export const getTherapistPatientsByName = createServerFn({method: "GET"})
-    .validator(z.object({therapistId: z.string().min(1), name: z.string().optional()}))
-    .handler(({data}) => {
-        return personRepository.getPatientsByTherapistIdAndName(data.therapistId, data.name)
+    .validator(z.object({name: z.string().optional()}))
+    .handler(async ({data}) => {
+        const therapist = await requireTherapist()
+        return personRepository.getPatientsByTherapistIdAndName(therapist.id, data.name)
     })
 
 export const getPatientOptions = createServerFn({method: "GET"})
-    .validator(z.object({ therapistId: z.string().min(1) }))
-    .handler(({data}) => personRepository.findPatientOptionsByTherapist(data.therapistId))
+    .handler(async () => {
+        const therapist = await requireTherapist()
+        return personRepository.findPatientOptionsByTherapist(therapist.id)}
+    )
 
 
 export const getPersonByName = createServerFn({method: "GET"})
@@ -27,7 +31,7 @@ export const getPersonByName = createServerFn({method: "GET"})
 
 export const updatePatient = createServerFn({method: "POST"})
     .validator(z.object({
-        id: z.string().min(1),
+        id: z.uuid(),
         name: z.string().optional(),
     }))
     .handler(({data}) => personRepository.update(data.id, data))

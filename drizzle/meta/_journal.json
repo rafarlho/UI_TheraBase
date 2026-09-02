@@ -36,6 +36,20 @@
       "when": 1787829599807,
       "tag": "0004_serious_kid_colt",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1788185549874,
+      "tag": "0005_tired_master_chief",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1788190087761,
+      "tag": "0006_sloppy_thundra",
+      "breakpoints": true
     }
   ]
 }

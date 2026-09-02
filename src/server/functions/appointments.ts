@@ -2,34 +2,41 @@ import { statusEnum } from "#/db/schema";
 import { appointmentRepository } from "#/repositories/appointment.repository";
 import { createServerFn } from "@tanstack/react-start";
 import z from "zod";
+import { requireTherapist } from "../auth";
+import { therapistPersonRepository } from "#/repositories/therapist-person.repository";
 
 export const getTodaysAppointmentsByTherapist = createServerFn({method: "GET"})
-    .validator(z.object({therapistId: z.string().min(1)}))
-    .handler(({data}) => {
-        return appointmentRepository.findTodayByTherapist(data.therapistId)
+    .handler(async () => {
+        const therapist = await requireTherapist()
+        return appointmentRepository.findTodayByTherapist(therapist.id)
     })
 
 export const getByTherapistAndDate = createServerFn({method: "GET"})
     .validator(z.object({
-        therapistId: z.string().min(1),
         startDate: z.date().min(1),
         endDate: z.date().min(1)
     }))
-    .handler(({data}) => {
-        return appointmentRepository.findByTherapistAndDate(data.therapistId, data.startDate, data.endDate)
+    .handler(async ({data}) => {
+        const therapist = await requireTherapist()
+        return appointmentRepository.findByTherapistAndDate(therapist.id, data.startDate, data.endDate)
     })
 
 
 export const updateAppointment = createServerFn({method: "POST"})
     .validator(z.object({
-        id: z.string().min(1),
+        id: z.uuid(),
         date: z.date().optional(),
         duration: z.number().optional(),
         status: z.enum(statusEnum.enumValues).optional(),
         notes: z.string().optional()
     }))
-    .handler(({data}) => {
-        return appointmentRepository.update(data.id, data)
+    .handler(async ({data}) => {
+        const therapist = await requireTherapist()
+        const {id, ...changes} = data
+
+        const updated = await appointmentRepository.update(id, therapist.id, changes)
+        if(!updated) throw new Error("Appointment not found")
+        return updated
     })
 
 export const createAppointment = createServerFn({method: "POST"})
@@ -37,9 +44,14 @@ export const createAppointment = createServerFn({method: "POST"})
         location:  z.string().min(1),
         date: z.date(),
         duration: z.number(),
-        therapistPersonId: z.string().min(1),
+        therapistPersonId: z.uuid(),
         notes: z.string().optional(),
     }))
-    .handler(({data}) => {
+    .handler(async ({data}) => {
+        const therapist = await requireTherapist()
+
+        const therapistPerson = await therapistPersonRepository.findByIdForTherapist(data.therapistPersonId, therapist.id)
+        if(!therapistPerson) throw new Error('Patient does not belong to therapist')
+
         return appointmentRepository.create(data)
     })

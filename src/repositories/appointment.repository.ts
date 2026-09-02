@@ -1,7 +1,7 @@
 import { db } from "#/db";
-import { appointment, therapistPerson } from "#/db/schema";
+import { appointment, person, therapistPerson } from "#/db/schema";
 import type { NewAppointment, Appointment, AppointmentWithPerson } from "#/entities/appointment.entity";
-import { and, eq, gte, lte } from "drizzle-orm";
+import { and, eq, exists, gte, lte } from "drizzle-orm";
 import { endOfDay, endOfToday, startOfDay, startOfToday } from "date-fns";
 
 export const appointmentRepository = {
@@ -21,18 +21,23 @@ export const appointmentRepository = {
     },
 
     async findByTherapistAndDate(therapistId: string, startDate: Date, endDate: Date): Promise<AppointmentWithPerson[]> {
-        return db.query.appointment.findMany({
-            where : and(
-                gte(appointment.date, startOfDay(startDate)),
-                lte(appointment.date, endOfDay(endDate)),
-            ),
-            with: {
-                therapistPerson: {
-                    where: eq(therapistPerson.therapistId, therapistId),
-                    with: {person:true}
-                }
-            }
-        })
+        const rows = await db.select({appointment, therapistPerson, person}).from(appointment)
+            .innerJoin(therapistPerson, eq(appointment.therapistPersonId, therapistPerson.id))
+            .innerJoin(person, eq(therapistPerson.personId, person.id))
+            .where(and(
+                and(
+                    eq(therapistPerson.therapistId, therapistId),
+                    gte(appointment.date, startOfDay(startDate)),
+                    lte(appointment.date, endOfDay(endDate)),
+                ),
+            ))
+        return rows.map(({ appointment, therapistPerson, person }) => ({
+            ...appointment,
+            therapistPerson: {
+            ...therapistPerson,
+            person,
+            },
+        }))
     },
 
     async findByTherapistPersonId(therapistPersonId: string): Promise<Appointment[]> {
@@ -44,15 +49,44 @@ export const appointmentRepository = {
         return created
     },
 
-    async update(id:string, data: Partial<NewAppointment>): Promise<Appointment> {
-        const [updated] = await db.update(appointment)
-            .set(data)
-            .where(eq(appointment.id,id))
-            .returning()
-        return updated
+    async update(id: string, therapistId: string, data: Partial<NewAppointment>): Promise<Appointment | undefined> {
+    const [updated] = await db
+        .update(appointment)
+        .set(data)
+        .where(
+        and(
+            eq(appointment.id, id),
+            exists(db.select().from(therapistPerson)
+                .where(
+                and(
+                    eq(
+                        therapistPerson.id,
+                        appointment.therapistPersonId,
+                    ),
+                    eq(
+                        therapistPerson.therapistId,
+                        therapistId,
+                    ),
+                ),
+                ),
+            ),
+        ),
+        )
+        .returning()
+
+    return updated
     },
 
-    async updateStatus(id: string, status: "finished" | "canceled") : Promise<void> {
-        await db.update(appointment).set({status: status}).where(eq(appointment.id, id))
+    async updateStatus(id: string, therapistId:string, status: "finished" | "canceled") : Promise<boolean> {
+        const result = await db.update(appointment).set({status: status}).where(
+            and(
+                eq(appointment.id, id),
+                exists(db.select().from(therapistPerson).where(and(
+                    eq(therapistPerson.id, appointment.therapistPersonId),
+                    eq(therapistPerson.therapistId, therapistId)
+                )))
+            )
+        ).returning({id: appointment.id})
+        return result.length>0
     }
 }

@@ -17,8 +17,7 @@ import { toast } from 'sonner'
 export const Route = createFileRoute('/_app/patients')({
     component: RouteComponent,
     loader: async () => {
-        const therapistId = "acf18675-88c0-4b6b-a880-b9f73400a2f0"
-        return getTherapistPatients({data: {therapistId}})
+        return getTherapistPatients()
     }
 })
 
@@ -35,7 +34,6 @@ function RouteComponent() {
 
     const updatePatientFn = useServerFn(updatePatient)
     const getCurrentTherapistPatientsFn = useServerFn(getTherapistPatientsByName)
-    const therapistId = "acf18675-88c0-4b6b-a880-b9f73400a2f0"
 
     useEffect(()=> setPatients(loaderData),[loaderData])
 
@@ -43,7 +41,6 @@ function RouteComponent() {
         const timeout = setTimeout(async ()=> {
             const filteredPatients =  await getCurrentTherapistPatientsFn({
                 data:{
-                    therapistId: therapistId,
                     name: search
                 }}) 
             setPatients(filteredPatients)
@@ -72,11 +69,10 @@ function RouteComponent() {
     })
 
     async function handleCreatePatient(name: string) {
-        await addPatientToTherapistByName(therapistId, name)
+        await addPatientToTherapistByName(name)
         setOpenCreateDialog(false)
         const filteredPatients =  await getCurrentTherapistPatientsFn({
             data:{
-                therapistId: therapistId,
                 name: search
             }}) 
         setPatients(filteredPatients)
@@ -84,11 +80,10 @@ function RouteComponent() {
     }
 
     async function handleRemovePatient() {
-        await removePatientFromTherapist({data:{therapistId, personId:selectedPatientToRemove!}})
+        await removePatientFromTherapist({data:{personId:selectedPatientToRemove!}})
         setOpenRemoveDialog(false)
         const filteredPatients =  await getCurrentTherapistPatientsFn({
             data:{
-                therapistId: therapistId,
                 name: search
             }}) 
         setPatients(filteredPatients)

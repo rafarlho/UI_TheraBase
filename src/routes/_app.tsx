@@ -1,11 +1,27 @@
 import Sidenav from '#/components/sidenav'
 import { ThemeProvider } from '#/components/theme-provider'
-import { SidebarProvider, SidebarTrigger } from '#/components/ui/sidebar'
+import { SidebarProvider } from '#/components/ui/sidebar'
 import { Toaster } from '#/components/ui/sonner'
 import { TooltipProvider } from '#/components/ui/tooltip'
-import { createFileRoute, Outlet } from '@tanstack/react-router'
+import { getCurrentSession } from '#/server/functions/auth'
+import { createFileRoute, Outlet, redirect } from '@tanstack/react-router'
 
-export const Route = createFileRoute('/_app')({ component: Home })
+export const Route = createFileRoute('/_app')({ 
+  component: Home, 
+  beforeLoad: async ({location}) => {
+    const session = await getCurrentSession()
+    
+    console.log(location)
+
+    if(!session) throw redirect(
+    {   
+        to:'/login',
+        search: {redirect: location.href}
+      }
+    )
+    return session
+  }
+})
 
 function Home() {
   return (

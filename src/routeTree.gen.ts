@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AppRouteImport } from './routes/_app'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppDashboardRouteImport } from './routes/_app/dashboard'
 import { Route as AppPatientsRouteImport } from './routes/_app/patients'
 import { Route as AppScheduleIndexRouteImport } from './routes/_app/schedule/index'
@@ -18,6 +19,11 @@ import { Route as AppScheduleIdIndexRouteImport } from './routes/_app/schedule/$
 
 const AppRoute = AppRouteImport.update({
   id: '/_app',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppDashboardRoute = AppDashboardRouteImport.update({
@@ -48,6 +54,7 @@ const AppScheduleIdIndexRoute = AppScheduleIdIndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof AppRouteWithChildren
+  '/login': typeof LoginRoute
   '/dashboard': typeof AppDashboardRoute
   '/patients': typeof AppPatientsRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -56,6 +63,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof AppRouteWithChildren
+  '/login': typeof LoginRoute
   '/dashboard': typeof AppDashboardRoute
   '/patients': typeof AppPatientsRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -65,6 +73,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof AppRouteWithChildren
+  '/login': typeof LoginRoute
   '/_app/dashboard': typeof AppDashboardRoute
   '/_app/patients': typeof AppPatientsRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -75,6 +84,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/login'
     | '/dashboard'
     | '/patients'
     | '/api/auth/$'
@@ -83,6 +93,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/login'
     | '/dashboard'
     | '/patients'
     | '/api/auth/$'
@@ -91,6 +102,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/_app'
+    | '/login'
     | '/_app/dashboard'
     | '/_app/patients'
     | '/api/auth/$'
@@ -100,6 +112,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
+  LoginRoute: typeof LoginRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
 }
 
@@ -110,6 +123,13 @@ declare module '@tanstack/react-router' {
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof AppRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_app/dashboard': {
@@ -168,6 +188,7 @@ const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
+  LoginRoute: LoginRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
 }
 export const routeTree = rootRouteImport

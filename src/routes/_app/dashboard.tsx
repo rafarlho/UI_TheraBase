@@ -5,10 +5,9 @@ import { createFileRoute } from '@tanstack/react-router'
 export const Route = createFileRoute('/_app/dashboard')({
   component: RouteComponent,
   loader: async () => {
-    const therapistId = "acf18675-88c0-4b6b-a880-b9f73400a2f0"
     const [appointments, patients] = await Promise.all([
-      getTodaysAppointmentsByTherapist({data: {therapistId}}),
-      getTherapistPatients({data: {therapistId}})
+      getTodaysAppointmentsByTherapist(),
+      getTherapistPatients()
     ])
     return {appointments, patients}
   }

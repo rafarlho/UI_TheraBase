@@ -4,6 +4,12 @@ import type { NewTherapist, Therapist } from "#/entities/therapist.entity";
 import { and, eq } from "drizzle-orm";
 
 export const therapistRepository = {
+
+    async findByUserId(userId: string) : Promise<Therapist | undefined> {
+        const results = await db.select().from(therapist).where(eq(therapist.userId, userId)).limit(1)
+        return results[0] ?? undefined
+    },
+
     async findById(id:string): Promise <Therapist | undefined> {
         return db.query.therapist.findFirst({where: and(
             eq(therapist.id, id), 

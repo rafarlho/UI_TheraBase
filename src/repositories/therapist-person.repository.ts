@@ -5,7 +5,15 @@ import { and, eq } from "drizzle-orm";
 
 export const therapistPersonRepository = {
 
-    
+    async findByIdForTherapist(id:string, therapistId:string) : Promise<TherapistPerson | undefined> {
+        return db.query.therapistPerson.findFirst({
+            where: and(
+                eq(therapistPerson.id, id),
+                eq(therapistPerson.therapistId, therapistId)
+            )
+        })
+    },
+
     async getPatientsByTherapistIdAndPersonId(therapistId:string, personId: string) : Promise<TherapistPerson | undefined> {
         return db.query.therapistPerson.findFirst({where: and(
                     eq(therapistPerson.therapistId, therapistId), 
@@ -18,17 +26,24 @@ export const therapistPersonRepository = {
         return created
     },
 
-    async update(id:string, data: Partial<TherapistPerson>): Promise<TherapistPerson> {
+    async update(id:string, therapistId:string, data: Partial<TherapistPerson>): Promise<TherapistPerson> {
         const [updated] = await db.update(therapistPerson)
             .set(data)
-            .where(eq(therapistPerson.id,id))
+            .where(and(
+                eq(therapistPerson.therapistId, therapistId),
+                eq(therapistPerson.id,id))
+            )
             .returning()
         return updated
     },
 
-    async deactivate(id: string) : Promise<void> {
-        await db.update(therapistPerson).set({active: false}).where(eq(therapistPerson.id, id
-        ))
+    async deactivate(id: string, therapistId: string) : Promise<void> {
+        await db.update(therapistPerson).set({active: false}).where(
+            and(
+                eq(therapistPerson.therapistId, therapistId),
+                eq(therapistPerson.id, id)
+            )
+        )
     },
 
     async deactivateByIds(therapistId: string, personId:string) : Promise<void> {
