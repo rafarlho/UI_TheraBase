@@ -1,5 +1,6 @@
 import { auth } from "#/lib/auth"
 import { therapistRepository } from "#/repositories/therapist.repository"
+import { userRepository } from "#/repositories/user.respository"
 import { getRequest } from "@tanstack/react-start/server"
 
 export async function requireSession() {
@@ -10,7 +11,9 @@ export async function requireSession() {
 
     if(!session) throw new Error("Unauthorized")
 
-    return session
+    const user = await userRepository.findById(session.user.id)
+
+    return {...session, isActive: user?.isActive}
 }
 
 export async function requireTherapist() {

@@ -10,7 +10,7 @@ export const Route = createFileRoute('/_app')({
   component: Home, 
   beforeLoad: async ({location}) => {
     const session = await getCurrentSession()
-    
+    console.log(session)
     console.log(location)
 
     if(!session) throw redirect(
@@ -19,6 +19,8 @@ export const Route = createFileRoute('/_app')({
         search: {redirect: location.href}
       }
     )
+
+    if(!session.isActive) throw redirect({to: '/pending-approval'})
     return session
   }
 })
