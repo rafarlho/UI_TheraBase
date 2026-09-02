@@ -17,13 +17,12 @@ import { pt } from "date-fns/locale"
 import { ptI18n } from '#/utils/calendar-portuguese'
 import { Badge } from '#/components/ui/badge'
 
-const therapistId = "acf18675-88c0-4b6b-a880-b9f73400a2f0"
 export const Route = createFileRoute('/_app/schedule/')({
   component: RouteComponent,
   loader: async () => {
     const [appointementsLoaded, patientsLoaded] = await Promise.all([
-      getByTherapistAndDate({data:{therapistId, startDate: new Date(), endDate: new Date()}}),
-      getPatientOptions({data:{therapistId}})
+      getByTherapistAndDate({data:{startDate: new Date(), endDate: new Date()}}),
+      getPatientOptions()
     ])
     return {appointementsLoaded, patientsLoaded}
   }
@@ -59,7 +58,6 @@ function RouteComponent() {
   async function getAppointmentsByRange() {
     const {start, end} = apiRef.current!.getActiveRange()
     const appointments = await getByTherapistAndDateFn({data:{
-      therapistId,
       startDate: new Date(start),
       endDate: new Date(end),
     }})

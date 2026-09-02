@@ -6,8 +6,10 @@ import { getRequest } from "@tanstack/react-start/server";
 
 export const getCurrentSession = createServerFn({method:"GET"}).handler(async () => {
     const request = getRequest()
-    const session = await auth.api.getSession({headers: request.headers})
-    const user = await userRepository.findById(session!.user.id)
+    const sessionData = await auth.api.getSession({headers: request.headers})
+    if(!sessionData) return undefined
     
-    return {...session,...user, isActive: user!.isActive} as SessionWithActive
+    const user = await userRepository.findById(sessionData.user.id)
+    if(!user) return undefined
+    return {...sessionData.session, ...user, isActive: user.isActive}
 })

@@ -10,9 +10,6 @@ export const Route = createFileRoute('/_app')({
   component: Home, 
   beforeLoad: async ({location}) => {
     const session = await getCurrentSession()
-    console.log(session)
-    console.log(location)
-
     if(!session) throw redirect(
     {   
         to:'/login',

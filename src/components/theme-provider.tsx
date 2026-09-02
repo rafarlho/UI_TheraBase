@@ -71,9 +71,7 @@ export function ThemeProvider({
     return (localStorage.getItem(storageKey) as Theme) || defaultTheme
   })
 
-  const [resolvedTheme, setResolvedTheme] = React.useState<ResolvedTheme>(() =>
-    theme === "system" ? getSystemTheme() : theme
-  )
+  const [resolvedTheme, setResolvedTheme] = React.useState<ResolvedTheme>("light")
 
   const setTheme = React.useCallback(
     (nextTheme: Theme) => {
