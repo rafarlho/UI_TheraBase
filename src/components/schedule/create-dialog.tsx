@@ -1,8 +1,7 @@
 import { useServerFn } from "@tanstack/react-start"
 import AppointmentForm from "../forms/appointment-form"
 import type { AppointementFormValues } from "../forms/appointment-form"
-import { Button } from "../ui/button"
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "../ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog"
 import { createAppointment } from "#/server/functions/appointments"
 import { toast } from "sonner"
 

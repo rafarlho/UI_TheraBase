@@ -1,7 +1,7 @@
 import { db } from "#/db";
 import { appointment, person, therapistPerson } from "#/db/schema";
 import type { NewAppointment, Appointment, AppointmentWithPerson } from "#/entities/appointment.entity";
-import { and, eq, exists, gte, lte } from "drizzle-orm";
+import { and, eq, exists, gte, lte, ne } from "drizzle-orm";
 import { endOfDay, endOfToday, startOfDay, startOfToday } from "date-fns";
 
 export const appointmentRepository = {
@@ -38,6 +38,43 @@ export const appointmentRepository = {
             person,
             },
         }))
+    },
+
+
+    async getAppointementDetailed(therapistId: string, id: string): Promise<AppointmentWithPerson> {
+        const rows = await db.select({appointment, therapistPerson, person}).from(appointment)
+            .innerJoin(therapistPerson, eq(appointment.therapistPersonId, therapistPerson.id))
+            .innerJoin(person, eq(therapistPerson.personId, person.id))
+            .limit(1)
+            .where(
+                and(
+                    eq(appointment.id, id),
+                    eq(therapistPerson.therapistId, therapistId),
+                ),
+            )
+        const mappedRows = rows.map(({ appointment, therapistPerson, person }) => ({
+            ...appointment,
+            therapistPerson: {
+            ...therapistPerson,
+            person,
+            },
+        }))
+        return mappedRows[0]
+    },
+
+    async getAllAppointmentsForPatient(therapistId: string, id: string): Promise<Appointment[]> {
+        return db.select({appointment}).from(appointment)
+            .innerJoin(therapistPerson, eq(appointment.therapistPersonId, therapistPerson.id))
+            .where(
+                and(
+                    eq(therapistPerson.id, id),
+                    ne(appointment.status,"canceled"),
+                    eq(therapistPerson.therapistId, therapistId),
+                    
+                ),
+            )
+            .orderBy(appointment.date)
+            .then((rows) => rows.map(r => r.appointment))
     },
 
     async findByTherapistPersonId(therapistPersonId: string): Promise<Appointment[]> {

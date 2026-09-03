@@ -8,7 +8,7 @@ import { Button } from '#/components/ui/button'
 import type { AppointmentWithPerson } from '#/entities/appointment.entity'
 import { getByTherapistAndDate, updateAppointment } from '#/server/functions/appointments'
 import { getPatientOptions } from '#/server/functions/persons'
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useServerFn } from '@tanstack/react-start'
 import { addMinutes, differenceInMinutes, isEqual } from 'date-fns'
 import { CalendarX2, ClipboardClock, MapPin, PlusIcon, SquareCheckBig } from 'lucide-react'
@@ -38,6 +38,7 @@ function RouteComponent() {
   const getByTherapistAndDateFn = useServerFn(getByTherapistAndDate)
 
   const apiRef = useRef<EventCalendarApi<AppointmentWithPerson> | null>(null)
+  const navigate = useNavigate()
 
   useEffect(()=> setAppointments(appointementsLoaded.map(a => parseAppointmentToCalendarEvent(a))),[appointementsLoaded])
 
@@ -73,7 +74,7 @@ function RouteComponent() {
           locale={pt}
           i18n={ptI18n}
           events={appointements}
-          onEventClick={(e: any)=>console.log(e)}
+          onEventClick={(e: any)=> navigate({to: `/schedule/${e.event.id}/`})}
           onEventsChange={handleEventChange}
           onDateChange={getAppointmentsByRange}
           onViewChange={getAppointmentsByRange}

@@ -55,3 +55,27 @@ export const createAppointment = createServerFn({method: "POST"})
 
         return appointmentRepository.create(data)
     })
+
+export const getAppointmentDetails = createServerFn({method:"GET"})
+    .validator(z.object({id: z.uuid()}))
+    .handler( async ({data}) => {
+        const therapist = await requireTherapist()
+        return await appointmentRepository.getAppointementDetailed(therapist.id, data.id) 
+    })
+
+export const getAllAppointmentsForPatient = createServerFn({method:"GET"})
+    .validator(z.object({id: z.uuid()}))
+    .handler(async ({data}) => {
+        const therapist = await requireTherapist()
+        return await appointmentRepository.getAllAppointmentsForPatient(therapist.id, data.id)
+    })
+
+export const updateAppointmentStatus = createServerFn({method: "POST"})
+    .validator(z.object({
+        id: z.uuid(),
+        status: z.enum(["finished", "canceled"])
+    }))
+    .handler(async ({data}) => {
+        const therapist = await requireTherapist()
+        return await appointmentRepository.updateStatus(data.id, therapist.id, data.status)
+    })
