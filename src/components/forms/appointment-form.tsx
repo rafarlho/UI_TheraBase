@@ -68,7 +68,7 @@ function AppointmentForm({defaultValues, onSubmit, patientOptions, closeDialog, 
                                 <Button type="button" variant="destructive" onClick={()=> {setAddPatient(false); setNewPatient("")}}><X/></Button>
                                 <Button type="button" onClick={addNewPatient}><Save/></Button>
                             </div>)
-                            : (<div className="flex gap-2 items-center">
+                            : (<div className="flex gap-2 items-end">
                             <FormField
                                 control={form.control}
                                 name="therapistPersonId"
