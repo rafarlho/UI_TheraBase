@@ -322,10 +322,10 @@ function EventCalendarViewSwitcher({
           {...props}
         >
           {children ?? (
-            <>
+            <div className="flex">
               {viewLabel(view)}
               <ChevronDownIcon className="size-4 opacity-60" aria-hidden="true" />
-            </>
+            </div>
           )}
         </DropdownMenuTrigger>
         {tipOpen && !open && tooltip !== null && !tooltips.disabled && (
