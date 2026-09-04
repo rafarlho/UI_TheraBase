@@ -32,7 +32,7 @@ function Sidenav() {
                     <SidebarMenu>
                         <SidebarMenuItem>
                             <SidebarMenuButton asChild>
-                                <Link to={"/dashboard"}>
+                                <Link to={"/"}>
                                     <Home/>
                                     <span>Página Principal</span>
                                 </Link>

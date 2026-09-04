@@ -10,7 +10,7 @@ import { pt } from "date-fns/locale"
 import { Calendar, CalendarX, CalendarX2, CheckSquareIcon, ClipboardClock, Clock, SquareCheckBig } from 'lucide-react'
 import { toast } from 'sonner'
 
-export const Route = createFileRoute('/_app/dashboard')({
+export const Route = createFileRoute('/_app/')({
   component: RouteComponent,
   loader: async () => {
     const [weekAppointments,session] = await Promise.all([

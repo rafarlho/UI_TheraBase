@@ -21,7 +21,7 @@ export const Route = createFileRoute('/register')({
     
         const therapist = await getCurrentTherapist()
     
-        if(therapist) throw redirect({to: '/dashboard'})
+        if(therapist) throw redirect({to: '/'})
         return session
     }
 })

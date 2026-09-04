@@ -11,7 +11,7 @@ export const Route = createFileRoute('/login')({
     validateSearch: z.object({redirect: z.string().optional()}),
     beforeLoad: async () => {
       const session = await getCurrentSession()
-      if(session && session.isActive) throw redirect({to: "/dashboard"})
+      if(session && session.isActive) throw redirect({to: "/"})
     },    
     component: LoginPage,
 })
@@ -57,7 +57,7 @@ function LoginPage() {
           return
         }
       }
-      const redirectTo = search.redirect ?? "/dashboard"
+      const redirectTo = search.redirect ?? "/"
       await navigate({ to: redirectTo })
     } catch (error) {
       setError(
@@ -149,7 +149,7 @@ function LoginPage() {
                   </form>
                 </CardContent>
                 <CardFooter className='flex gap-0.5'>
-                    <p>{isRegistering ? "Já tens conta? Autenticate ": "Ainda não tens conta? Cria uma "}</p>
+                    <p>{isRegistering ? "Já tens conta? Entra ": "Ainda não tens conta? Cria uma "}</p>
                     <button
                       type="button"
                       onClick={() => {

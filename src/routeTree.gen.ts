@@ -13,7 +13,7 @@ import { Route as AppRouteImport } from './routes/_app'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as PendingApprovalRouteImport } from './routes/pending-approval'
 import { Route as RegisterRouteImport } from './routes/register'
-import { Route as AppDashboardRouteImport } from './routes/_app/dashboard'
+import { Route as AppIndexRouteImport } from './routes/_app/index'
 import { Route as AppPatientsRouteImport } from './routes/_app/patients'
 import { Route as AppScheduleIndexRouteImport } from './routes/_app/schedule/index'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
@@ -38,9 +38,9 @@ const RegisterRoute = RegisterRouteImport.update({
   path: '/register',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AppDashboardRoute = AppDashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
+const AppIndexRoute = AppIndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => AppRoute,
 } as any)
 const AppPatientsRoute = AppPatientsRouteImport.update({
@@ -65,23 +65,21 @@ const AppScheduleIdIndexRoute = AppScheduleIdIndexRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof AppRouteWithChildren
+  '/': typeof AppIndexRoute
   '/login': typeof LoginRoute
   '/pending-approval': typeof PendingApprovalRoute
   '/register': typeof RegisterRoute
-  '/dashboard': typeof AppDashboardRoute
   '/patients': typeof AppPatientsRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/schedule/': typeof AppScheduleIndexRoute
   '/schedule/$id/': typeof AppScheduleIdIndexRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
   '/pending-approval': typeof PendingApprovalRoute
   '/register': typeof RegisterRoute
-  '/dashboard': typeof AppDashboardRoute
   '/patients': typeof AppPatientsRoute
+  '/': typeof AppIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/schedule': typeof AppScheduleIndexRoute
   '/schedule/$id': typeof AppScheduleIdIndexRoute
@@ -92,8 +90,8 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/pending-approval': typeof PendingApprovalRoute
   '/register': typeof RegisterRoute
-  '/_app/dashboard': typeof AppDashboardRoute
   '/_app/patients': typeof AppPatientsRoute
+  '/_app/': typeof AppIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/_app/schedule/': typeof AppScheduleIndexRoute
   '/_app/schedule/$id/': typeof AppScheduleIdIndexRoute
@@ -105,19 +103,17 @@ export interface FileRouteTypes {
     | '/login'
     | '/pending-approval'
     | '/register'
-    | '/dashboard'
     | '/patients'
     | '/api/auth/$'
     | '/schedule/'
     | '/schedule/$id/'
   fileRoutesByTo: FileRoutesByTo
   to:
-    | '/'
     | '/login'
     | '/pending-approval'
     | '/register'
-    | '/dashboard'
     | '/patients'
+    | '/'
     | '/api/auth/$'
     | '/schedule'
     | '/schedule/$id'
@@ -127,8 +123,8 @@ export interface FileRouteTypes {
     | '/login'
     | '/pending-approval'
     | '/register'
-    | '/_app/dashboard'
     | '/_app/patients'
+    | '/_app/'
     | '/api/auth/$'
     | '/_app/schedule/'
     | '/_app/schedule/$id/'
@@ -172,11 +168,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RegisterRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_app/dashboard': {
-      id: '/_app/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof AppDashboardRouteImport
+    '/_app/': {
+      id: '/_app/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof AppIndexRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/patients': {
@@ -211,15 +207,15 @@ declare module '@tanstack/react-router' {
 }
 
 interface AppRouteChildren {
-  AppDashboardRoute: typeof AppDashboardRoute
   AppPatientsRoute: typeof AppPatientsRoute
+  AppIndexRoute: typeof AppIndexRoute
   AppScheduleIndexRoute: typeof AppScheduleIndexRoute
   AppScheduleIdIndexRoute: typeof AppScheduleIdIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
-  AppDashboardRoute: AppDashboardRoute,
   AppPatientsRoute: AppPatientsRoute,
+  AppIndexRoute: AppIndexRoute,
   AppScheduleIndexRoute: AppScheduleIndexRoute,
   AppScheduleIdIndexRoute: AppScheduleIdIndexRoute,
 }

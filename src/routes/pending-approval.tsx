@@ -9,7 +9,7 @@ export const Route = createFileRoute('/pending-approval')({
         const session = await getCurrentSession()
         if(!session) throw redirect({ to:'/login' })
     
-        if(session.isActive) throw redirect({to: '/dashboard'})
+        if(session.isActive) throw redirect({to: '/'})
         return session
     }
 })
