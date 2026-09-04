@@ -1,7 +1,7 @@
 import { db } from "#/db";
 import { appointment, person, therapistPerson } from "#/db/schema";
 import type { NewAppointment, Appointment, AppointmentWithPerson } from "#/entities/appointment.entity";
-import { and, desc, eq, exists, gte, lte, ne, or } from "drizzle-orm";
+import { and, eq, exists, gte, lte, ne } from "drizzle-orm";
 import { endOfDay, endOfToday, startOfDay, startOfToday } from "date-fns";
 
 export const appointmentRepository = {

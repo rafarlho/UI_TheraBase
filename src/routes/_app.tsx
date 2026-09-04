@@ -3,7 +3,7 @@ import { ThemeProvider } from '#/components/theme-provider'
 import { SidebarProvider } from '#/components/ui/sidebar'
 import { Toaster } from '#/components/ui/sonner'
 import { TooltipProvider } from '#/components/ui/tooltip'
-import { getCurrentSession } from '#/server/functions/auth'
+import { getCurrentSession, getCurrentTherapist } from '#/server/functions/auth'
 import { createFileRoute, Outlet, redirect } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/_app')({ 
@@ -18,6 +18,10 @@ export const Route = createFileRoute('/_app')({
     )
 
     if(!session.isActive) throw redirect({to: '/pending-approval'})
+
+    const therapist = await getCurrentTherapist()
+
+    if(!therapist) throw redirect({to: '/register'})
     return session
   }
 })
