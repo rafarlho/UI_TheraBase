@@ -1,9 +1,9 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, useNavigate, useRouter } from '@tanstack/react-router'
 import { useReactTable, createColumnHelper, getCoreRowModel, flexRender } from "@tanstack/react-table"
 import type { Person } from '#/entities/person.entity'
 import { getTherapistPatients, getTherapistPatientsByName, updatePatient } from '#/server/functions/persons'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '#/components/ui/table'
-import { Plus, Trash } from 'lucide-react'
+import { ExternalLink, Plus, Trash } from 'lucide-react'
 import EditableCell from '#/components/editable-cell'
 import { useServerFn } from '@tanstack/react-start'
 import { useEffect, useMemo, useState } from 'react'
@@ -13,6 +13,8 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { addPatientToTherapistByName } from '#/services/patients'
 import { removePatientFromTherapist } from '#/server/functions/therapist-person'
 import { toast } from 'sonner'
+import { getAllAppointmentsForPatient } from '#/server/functions/appointments'
+import { isAfter, isBefore } from 'date-fns'
 
 export const Route = createFileRoute('/_app/patients')({
     component: RouteComponent,
@@ -25,6 +27,8 @@ const columnHelper = createColumnHelper<Person>()
 
 function RouteComponent() {
     const loaderData = Route.useLoaderData()
+    const router = useRouter()
+    const navigate = useNavigate()
     
     const [search, setSearch] = useState("")
     const [patients, setPatients] = useState<Person[]>([])
@@ -49,6 +53,16 @@ function RouteComponent() {
         return () => clearTimeout(timeout)
     },[search])
 
+    const getAllAppointmentsForPatientFn = useServerFn(getAllAppointmentsForPatient)
+    async function navigateToPatient(id: string) {
+        const allAppointment = await getAllAppointmentsForPatientFn({data:{id}})
+        const finishedAppointments = allAppointment.filter(a => a.status === "finished" && isBefore(a.date, new Date()))
+        const toAttendAppointments = allAppointment.filter(a => a.status === "not_started" && isAfter(a.date, new Date()))
+        if(finishedAppointments.length) navigate({to: `/schedule/${finishedAppointments[finishedAppointments.length-1].id}` })
+        else if(toAttendAppointments.length) navigate({to: `/schedule/${toAttendAppointments[toAttendAppointments.length-1].id}` })
+        else toast.info("Não existem consultas para o paciente selecionado")
+    }
+
     const columns = useMemo(()=>[
         columnHelper.accessor("name",{
             header: "Nome",
@@ -57,7 +71,11 @@ function RouteComponent() {
             onSave={newValue => updatePatientFn({data: {id: cell.row.original.id, name: newValue}})}
             />
         },),
-        columnHelper.accessor("id",{header: "", cell: (cell) => <Button variant={'destructive'} onClick={()=> {setSelectedPatientToRemove(cell.getValue()); setOpenRemoveDialog(true)}}><Trash/></Button>}),
+        columnHelper.accessor("id",{header: "", cell: (cell) => <div className='flex w-full justify-end gap-3'>
+                    <Button variant={'destructive'} onClick={()=> {setSelectedPatientToRemove(cell.getValue()); setOpenRemoveDialog(true)}}><Trash/></Button>
+                    <Button onClick={()=> navigateToPatient(cell.getValue())}><ExternalLink/></Button>
+                </div>
+                }),
 
     ],[updatePatientFn])
 
@@ -71,22 +89,14 @@ function RouteComponent() {
     async function handleCreatePatient(name: string) {
         await addPatientToTherapistByName(name)
         setOpenCreateDialog(false)
-        const filteredPatients =  await getCurrentTherapistPatientsFn({
-            data:{
-                name: search
-            }}) 
-        setPatients(filteredPatients)
+        router.invalidate()
         toast.success(`O paciente ${name} foi adicionado com sucesso`)
     }
 
     async function handleRemovePatient() {
         await removePatientFromTherapist({data:{personId:selectedPatientToRemove!}})
         setOpenRemoveDialog(false)
-        const filteredPatients =  await getCurrentTherapistPatientsFn({
-            data:{
-                name: search
-            }}) 
-        setPatients(filteredPatients)
+        router.invalidate()
         toast.success(`O paciente foi removido com sucesso`)
     }
 
@@ -147,7 +157,7 @@ function RouteComponent() {
                     </Dialog>
                 </div>
             </div>
-            {patients.length ? renderTable() :<span>Não foram encontrados pacientes associados a ti {search ? "com esse nome. Valida a tua procura e tenta de novo.": "."}</span> }
+            {patients.length ? renderTable() :<span>Não foram encontrados pacientes associados a ti{search ? " com esse nome. Valida a tua procura e tenta de novo.": "."}</span> }
             
         </div>
     )

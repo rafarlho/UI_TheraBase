@@ -73,7 +73,7 @@ export const getAllAppointmentsForPatient = createServerFn({method:"GET"})
 export const updateAppointmentStatus = createServerFn({method: "POST"})
     .validator(z.object({
         id: z.uuid(),
-        status: z.enum(["finished", "canceled"])
+        status: z.enum(["finished", "canceled","not_started"])
     }))
     .handler(async ({data}) => {
         const therapist = await requireTherapist()

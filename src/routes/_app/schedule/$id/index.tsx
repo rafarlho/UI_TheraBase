@@ -1,4 +1,3 @@
-import PendingSkeleton from '#/components/schedule/index/pending-skeleton'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '#/components/ui/alert-dialog'
 import { Badge } from '#/components/ui/badge'
 import { Button } from '#/components/ui/button'
@@ -8,10 +7,13 @@ import type { AppointmentWithPerson } from '#/entities/appointment.entity'
 import { getAllAppointmentsForPatient, getAppointmentDetails, updateAppointment, updateAppointmentStatus } from '#/server/functions/appointments'
 import { createFileRoute, useBlocker, useNavigate, useRouter } from '@tanstack/react-router'
 import { useServerFn } from '@tanstack/react-start'
-import { format } from 'date-fns'
-import { CalendarX2, ClipboardClock, ExternalLink, Save, SquareCheckBig } from 'lucide-react'
+import { format, isAfter } from 'date-fns'
+import { CalendarX2, ClipboardClock, Edit, ExternalLink, Save, SquareCheckBig } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
+import { pt } from "date-fns/locale"
+import CreateDialog from '#/components/schedule/create-dialog'
+import UpdateDialog from '#/components/schedule/update-dialog'
 
 export const Route = createFileRoute('/_app/schedule/$id/')({
   component: RouteComponent,
@@ -31,6 +33,8 @@ function RouteComponent() {
   const router = useRouter()
   
   const [notes, setNotes] = useState(appointment.notes ?? "")
+  const [openUpdateDialog, setOpenUpdateDialog] = useState(false)
+
   const enableNotes = (appointment.notes ?? "") === notes 
   
   useEffect(() => {
@@ -52,13 +56,14 @@ function RouteComponent() {
     router.invalidate()
   }
 
-  async function updateStatus(status: "finished"|"canceled") {
+  async function updateStatus(status: "finished"|"canceled"|"not_started") {
     await updateAppointmentStatusFn({data:{id: appointment.id, status}})
     toast.success("Estado da sessão atualizado com sucesso")
     router.invalidate()
   }
 
-  return <main className='p-10 flex flex-col h-dvh overflow-hidden' id="detailed-appointment-page">
+  return <main className='p-10 flex flex-col h-dvh overflow-hidden w-full' id="detailed-appointment-page">
+    <UpdateDialog appointment={appointment} open={openUpdateDialog} setOpen={setOpenUpdateDialog} patientOptions={[patient]} refreshData={()=> router.invalidate()}/>
     <AlertDialog open={status === 'blocked'}>
       <AlertDialogContent>
         <AlertDialogHeader>
@@ -79,8 +84,9 @@ function RouteComponent() {
             <CardTitle>{patient.name}</CardTitle>
             <CardDescription className='flex justify-between'>
               <div>
-                <p>Início: <b>{format(appointment.date, "d-M-yyyy") }</b></p>
-                <p>Duração: <b>{appointment.duration}</b></p>
+                <p>Início: <b>{format(appointment.date, "HH:mm 'de' EEEE, d 'de' MMMM 'de'  yyyy", {locale: pt}) }</b></p>
+                <p>Duração: <b>{appointment.duration} minutos</b></p>
+                <p>Localização: <b>{appointment.location}</b></p>
               </div>
               <Badge className="w-fit" variant={appointment.status === 'not_started' ? 'secondary' : appointment.status === 'canceled' ? "destructive" : 'default'}>
                 {statusLabels[appointment.status].icon}
@@ -97,12 +103,21 @@ function RouteComponent() {
             <Button disabled={enableNotes} onClick={updateNotes}><Save/></Button>
           </CardContent>
           <CardFooter className='flex flex-row justify-between'>
-            {appointment.status === "not_started" && (
-              <>
-              <Button onClick={()=>updateStatus("canceled")} variant="destructive">Cancelar sessão</Button>
-              <Button onClick={()=>updateStatus("finished")}>Terminar sessão</Button>
-              </>
-            )}
+            <Button variant={"outline"} onClick={()=>setOpenUpdateDialog(true)}><Edit/> Alterar</Button>
+              <div className='flex gap-2'>
+                {appointment.status === "not_started" && (<>
+                  <Button onClick={()=>updateStatus("canceled")} variant="destructive">Cancelar sessão</Button>
+                  <Button onClick={()=>updateStatus("finished")} disabled={isAfter(appointment.date, new Date())}>Concluir sessão</Button>
+                  </>)}
+                {appointment.status === "finished" && (<>
+                  <Button onClick={()=>updateStatus("canceled")} variant="destructive">Cancelar sessão</Button>
+                  <Button onClick={()=>updateStatus("not_started")} variant="secondary">Cancelar término</Button>
+                  </>)}
+                {appointment.status === "canceled" && (<>
+                  <Button onClick={()=>updateStatus("not_started")} variant="secondary">Cancelar término</Button>
+                  <Button onClick={()=>updateStatus("finished")} disabled={isAfter(appointment.date, new Date())}>Concluir sessão</Button>
+                  </>)}
+              </div>
           </CardFooter>
         </Card>
       </section>
@@ -113,7 +128,7 @@ function RouteComponent() {
             <CardHeader>
               <CardTitle className='flex justify-between items-center'>
                 <div className='flex flex-col gap-2'>
-                  <p>{format(a.date, "d-M-yyyy") }</p> 
+                  <p>{format(a.date, "HH:mm 'de' EEEE, d 'de' MMMM 'de'  yyyy", {locale: pt}) }</p> 
                   <Badge className="w-fit" variant={a.status === 'not_started' ? 'secondary' : a.status === 'canceled' ? "destructive" : 'default'}>
                     {statusLabels[a.status].icon}
                     {statusLabels[a.status].name}

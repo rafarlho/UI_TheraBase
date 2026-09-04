@@ -6,20 +6,17 @@ export const addPatientToTherapistByName =async (name:string) => {
     let person = await getPersonByName({data:{name}}) 
     if(!person)  {
         person = await createPerson({data:{name}})
-        await addPatientToTherapist({data:{personId: person.id}})
-        return
+        return await addPatientToTherapist({data:{personId: person.id}})
     }
     
     const currentMatch = await getTherapistPatientsById({data:{personId: person.id}})
     
     if(!currentMatch) {
-        await addPatientToTherapist({data:{personId: person.id}})
-        return
+        return  await addPatientToTherapist({data:{personId: person.id}})
     }
 
     if(!currentMatch.active) {
-        await enableTherapistPerson({data:{ id:currentMatch.id}})
-        return
+        return await enableTherapistPerson({data:{ id:currentMatch.id}})
     }
 
     toast.warning(`O paciente ${person.name} já está associado a ti`)

@@ -106,7 +106,7 @@ export const appointmentRepository = {
         return updated
     },
 
-    async updateStatus(id: string, therapistId:string, status: "finished" | "canceled") : Promise<boolean> {
+    async updateStatus(id: string, therapistId:string, status: "finished" | "canceled"|"not_started") : Promise<boolean> {
         const result = await db.update(appointment).set({status: status}).where(
             and(
                 eq(appointment.id, id),

@@ -31,7 +31,5 @@ function RouteComponent() {
                 <Button onClick={()=>  navigate({to: "/login"})}>Navegar para Login</Button>
             </CardFooter>
         </Card> 
-
-
     </div>
 }

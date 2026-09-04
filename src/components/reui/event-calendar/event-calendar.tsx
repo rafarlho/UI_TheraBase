@@ -54,7 +54,7 @@ import type {
 } from "#/components/reui/event-calendar/event-calendar-types.tsx"
 import { mergeProps } from "@base-ui/react/merge-props"
 import { useRender } from "@base-ui/react/use-render"
-import { addDays, type Locale } from "date-fns"
+import { addDays, startOfWeek, type Locale } from "date-fns"
 
 import { cn } from "#/lib/utils.ts"
 
@@ -666,6 +666,13 @@ function createEventCalendarStore<TData>(
       if (opts?.dayCount !== undefined) {
         setField("dayCount", Math.max(1, opts.dayCount))
       }
+      
+      if(view === "days" && opts?.dayCount === 6) {
+        const anchor = startOfWeek(toZoned(getState().date, settings.timeZone),{weekStartsOn: 1})
+        setField("date", anchor)
+      }
+      else setField("date",new Date())
+      
       setField("view", resolveView(view))
     },
     setDayCount(count) {
@@ -1586,7 +1593,7 @@ interface EventCalendarViewConfig<TData = unknown> {
   }) => ReactNode
   /**
    * N-day presets offered by the view switcher when the "days" view is
-   * enabled. @default [5]
+   * enabled. @default [6]
    */
   dayCountPresets: number[]
   /**
@@ -1640,7 +1647,7 @@ const DEFAULT_VIEW_CONFIG: EventCalendarViewConfig = {
   scrollbars: "custom",
   navButtonVariant: "ghost",
   navButtonSize: "sm",
-  dayCountPresets: [5],
+  dayCountPresets: [6],
   eventTooltip: false,
   compactEventMinutes: 45,
   morePopoverAlign: "start",

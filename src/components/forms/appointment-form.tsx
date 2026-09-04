@@ -1,14 +1,16 @@
-import { statusEnum } from "#/db/schema"
+import { statusEnum, therapistPerson } from "#/db/schema"
 import { useForm } from "react-hook-form"
 import z from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "../ui/form"
 import { Input } from "../ui/input"
 import { Button } from "../ui/button"
-import { Save } from "lucide-react"
+import { Cross, Plus, Save, X } from "lucide-react"
 import { Textarea } from "../ui/textarea"
 import { format } from "date-fns"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
+import { useState } from "react"
+import { addPatientToTherapistByName } from "#/services/patients"
 
 z.config(z.locales.pt())
 const appointmentFormSchema = z.object({
@@ -25,11 +27,13 @@ type AppointementFormProps = {
     defaultValues?: AppointementFormValues,
     onSubmit: (values:AppointementFormValues) => void ,
     patientOptions: { id: string; name: string }[],
+    isEdit?: boolean
     closeDialog:() => void
 }
 
-function AppointmentForm({defaultValues, onSubmit, patientOptions, closeDialog}: AppointementFormProps) {
-    
+function AppointmentForm({defaultValues, onSubmit, patientOptions, closeDialog, isEdit = false}: AppointementFormProps) {
+    const [isAddPatient, setAddPatient] = useState(false)
+    const [newPatient, setNewPatient] = useState("")
     if(!defaultValues)
         defaultValues = {
             date: new Date(),
@@ -39,39 +43,59 @@ function AppointmentForm({defaultValues, onSubmit, patientOptions, closeDialog}:
             therapistPersonId:""
         }
 
-        
-    
     const form = useForm<AppointementFormValues>({
         resolver: zodResolver(appointmentFormSchema),
         defaultValues
     })
 
+    async function addNewPatient() {
+
+        const result = await addPatientToTherapistByName(newPatient)
+        patientOptions.push({id: result.id, name: newPatient})
+        setNewPatient("")
+        setAddPatient(false)
+        form.setValue("therapistPersonId", result.id)
+    } 
+    
+
     return (
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                <FormField
-                    control={form.control}
-                    name="therapistPersonId"
-                    render={({field}) => (
-                        <FormItem>
-                            <FormLabel>Paciente</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                <FormControl>
-                                    <SelectTrigger className="w-full">
-                                        <SelectValue placeholder="Seleciona um paciente" />
-                                    </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                    {patientOptions.map((option) => (
-                                        <SelectItem key={option.id} value={option.id}>
-                                            {option.name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                            <FormMessage/>
-                        </FormItem>
-                )}/>
+                    {!isEdit && (
+                        isAddPatient ? 
+                            (<div className="flex gap-2">
+                                <Input value={newPatient} onChange={(e) => setNewPatient(e.target.value)}/>
+                                <Button type="button" variant="destructive" onClick={()=> {setAddPatient(false); setNewPatient("")}}><X/></Button>
+                                <Button type="button" onClick={addNewPatient}><Save/></Button>
+                            </div>)
+                            : (<div className="flex gap-2 items-center">
+                            <FormField
+                                control={form.control}
+                                name="therapistPersonId"
+                                render={({field}) => (
+                                    <FormItem className="w-full">
+                                        <FormLabel>Paciente</FormLabel>
+                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                            <FormControl>
+                                            <SelectTrigger className="w-full">
+                                                    <SelectValue placeholder="Seleciona um paciente" />
+                                                </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                                {patientOptions.map((option) => (
+                                                    <SelectItem key={option.id} value={option.id}>
+                                                        {option.name}
+                                                    </SelectItem>
+                                                ))}
+                                                </SelectContent>
+                                        </Select>
+                                        <FormMessage/>
+                                    </FormItem>
+                                )}
+                            />
+                            <Button type="button" onClick={()=> setAddPatient(true)}><Plus/></Button>
+                        </div>) 
+                )}
                 <FormField 
                     control={form.control}
                     name="location"
