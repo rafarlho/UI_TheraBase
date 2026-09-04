@@ -5,24 +5,29 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Textarea } from '#/components/ui/textarea'
 import type { AppointmentWithPerson } from '#/entities/appointment.entity'
 import { getAllAppointmentsForPatient, getAppointmentDetails, updateAppointment, updateAppointmentStatus } from '#/server/functions/appointments'
-import { createFileRoute, useBlocker, useNavigate, useRouter } from '@tanstack/react-router'
+import { createFileRoute, notFound, useBlocker, useNavigate, useRouter } from '@tanstack/react-router'
 import { useServerFn } from '@tanstack/react-start'
 import { format, isAfter } from 'date-fns'
 import { CalendarX2, ClipboardClock, Edit, ExternalLink, Save, SquareCheckBig } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { pt } from "date-fns/locale"
-import CreateDialog from '#/components/schedule/create-dialog'
 import UpdateDialog from '#/components/schedule/update-dialog'
 
 export const Route = createFileRoute('/_app/schedule/$id/')({
   component: RouteComponent,
   loader: async ({params}) => {
     const currentAppointment = await getAppointmentDetails({data:{id:params.id}})
+    if(!currentAppointment) throw notFound() 
     const allPatientAppointements = await getAllAppointmentsForPatient({data: {id: currentAppointment.therapistPerson.person.id}})
     const allPatientAppointementsExceptCurrent = allPatientAppointements.filter(a => a.id !== currentAppointment.id)
     return { appointment: currentAppointment , appointments: allPatientAppointementsExceptCurrent}
-  }
+  },
+  notFoundComponent:() => <div className='m-10'>
+    <h1 className='font-heading text-2xl'>A consulta que estás a tentar aceder não está acessível...</h1>
+    <span>Se achas que isto é um erro, por favor contacta o suporte.</span> 
+  </div>
+
 })
 
 function RouteComponent() {

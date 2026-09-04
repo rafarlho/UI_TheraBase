@@ -20,12 +20,14 @@ import { Badge } from '#/components/ui/badge'
 export const Route = createFileRoute('/_app/schedule/')({
   component: RouteComponent,
   loader: async () => {
-    const [appointementsLoaded, patientsLoaded] = await Promise.all([
-      getByTherapistAndDate({data:{startDate: startOfWeek(new Date()), endDate: endOfWeek(new Date())}}),
-      getPatientOptions()
-    ])
-    return {appointementsLoaded, patientsLoaded}
-  }
+      const [appointementsLoaded, patientsLoaded] = await Promise.all([
+        getByTherapistAndDate({data:{startDate: startOfWeek(new Date()), endDate: endOfWeek(new Date())}}),
+        getPatientOptions()
+      ])
+      console.log(appointementsLoaded, patientsLoaded)
+      return {appointementsLoaded, patientsLoaded}
+  },
+  errorComponent: ({ error }) => <>Algo correu mal: {error.message}</>
 })
 
 function RouteComponent() {

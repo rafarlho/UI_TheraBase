@@ -41,7 +41,7 @@ export const appointmentRepository = {
     },
 
 
-    async getAppointementDetailed(therapistId: string, id: string): Promise<AppointmentWithPerson> {
+    async getAppointementDetailed(therapistId: string, id: string): Promise<AppointmentWithPerson | undefined> {
         const rows = await db.select({appointment, therapistPerson, person}).from(appointment)
             .innerJoin(therapistPerson, eq(appointment.therapistPersonId, therapistPerson.id))
             .innerJoin(person, eq(therapistPerson.personId, person.id))
