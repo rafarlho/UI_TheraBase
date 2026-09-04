@@ -141,7 +141,6 @@ function RouteComponent() {
         <div className='h-dvh p-5 flex flex-col min-w-0 overflow-hidden gap-3 w-full'>
             <h1 className='font-heading font-bold text-2xl'> Pacientes</h1>
             <div className='flex justify-between items-center'>
-                <p>Gerir pacientes associados a ti</p>
                 <div className='flex gap-2'>
                     <Input 
                         placeholder='Procurar paciente...'
