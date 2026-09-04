@@ -577,11 +577,11 @@ function EventCalendarNav({
         {showViewSwitcher && <EventCalendarViewSwitcher />}
         <div className="flex items-center">
           <EventCalendarNavPrev />
+          <EventCalendarTitle/>
           <EventCalendarNavNext />
         </div>
         {/* ms-3 sets the title apart from the tight control cluster so the
             period reads as its own group, not another button */}
-        <EventCalendarTitle className="ms-3" />
         <div className="grow" />
       </TooltipProvider>
     ),

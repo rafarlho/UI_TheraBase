@@ -8,7 +8,7 @@ import { getAllAppointmentsForPatient, getAppointmentDetails, updateAppointment,
 import { createFileRoute, notFound, useBlocker, useNavigate, useRouter } from '@tanstack/react-router'
 import { useServerFn } from '@tanstack/react-start'
 import { format, isAfter } from 'date-fns'
-import { CalendarX2, ClipboardClock, Edit, ExternalLink, Save, SquareCheckBig } from 'lucide-react'
+import { ArrowLeft, CalendarX2, ClipboardClock, Edit, ExternalLink, Save, SquareCheckBig } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { pt } from "date-fns/locale"
@@ -36,7 +36,6 @@ function RouteComponent() {
   
   const navigate = useNavigate()
   const router = useRouter()
-  
   const [notes, setNotes] = useState(appointment.notes ?? "")
   const [openUpdateDialog, setOpenUpdateDialog] = useState(false)
 
@@ -67,7 +66,7 @@ function RouteComponent() {
     router.invalidate()
   }
 
-  return <main className='p-10 flex flex-col h-dvh overflow-hidden w-full' id="detailed-appointment-page">
+  return <main className='p-10 flex flex-col h-dvh overflow-hidden w-full' id="detailed-appointment-page relative">
     <UpdateDialog appointment={appointment} open={openUpdateDialog} setOpen={setOpenUpdateDialog} patientOptions={[patient]} refreshData={()=> router.invalidate()}/>
     <AlertDialog open={status === 'blocked'}>
       <AlertDialogContent>
@@ -81,8 +80,9 @@ function RouteComponent() {
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
-    <h1 className='text-2xl'>Paciente: <b>{patient.name}</b></h1>
-    <div className='grid lg:grid-cols-2 gap-10 mt-10 flex-1 min-h-0'> 
+    <small className="cursor-pointer flex border max-w-max py-1 rounded-sm  px-2 items-center gap-1" onClick={()=>router.history.back()}><ArrowLeft size={20}/> Voltar</small>
+    <h1 className='text-2xl mt-5'>Paciente: <b>{patient.name}</b></h1>
+    <div className='grid lg:grid-cols-2 gap-10 mt-5 flex-1 min-h-0'> 
       <section id="selected-appointment">
         <Card>
           <CardHeader>
@@ -147,6 +147,7 @@ function RouteComponent() {
             </CardContent>
           </Card>
         ))}
+        {!appointments.length && "Não existem outras consultas" }
       </section>
     </div>
   </main>
