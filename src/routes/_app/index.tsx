@@ -5,7 +5,7 @@ import { getAllAppointmentsForPatient, getByTherapistAndDate } from '#/server/fu
 import { getCurrentSession } from '#/server/functions/auth'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useServerFn } from '@tanstack/react-start'
-import { endOfWeek, format, isAfter, isBefore, isSameDay, startOfWeek } from 'date-fns'
+import { differenceInMonths, endOfWeek, format, isAfter, isBefore, isSameDay, startOfWeek } from 'date-fns'
 import { pt } from "date-fns/locale"
 import { Calendar, CalendarX, CalendarX2, CheckSquareIcon, ClipboardClock, Clock, SquareCheckBig } from 'lucide-react'
 import { toast } from 'sonner'
@@ -26,7 +26,7 @@ function RouteComponent() {
   const { weekAppointments, session} = Route.useLoaderData()
   const weeksPatientsMap = new Map()
   weekAppointments.forEach(a => {
-    weeksPatientsMap.set(a.therapistPerson.person.id, a.therapistPerson.person)
+    weeksPatientsMap.set(a.therapistPerson.person.id, a.therapistPerson)
   })
   const weeksPatients = Array.from(weeksPatientsMap.values())
 
@@ -95,7 +95,7 @@ function RouteComponent() {
               onClick={()=> navigate({to: `/schedule/${a.id}` })}
             >
               <span>{format(a.date,"HH:mm")}</span>
-              <span>{a.therapistPerson.person.name} ({a.location})</span>
+              <span>{a.therapistPerson.person.name} ({a.therapistPerson.clinic})</span>
               <Badge className="w-fit text-[10px] justify-self-end" variant={a.status === 'not_started' ? 'secondary' : a.status === 'canceled' ? "destructive" : 'default'}>
                 {statusLabels[a.status].icon}
                 {statusLabels[a.status].name}
@@ -111,9 +111,13 @@ function RouteComponent() {
             {weeksPatients.map((p,_i)=>(
               <li 
                 key={_i} 
-                className="bg-primary/20 p-2 rounded-sm my-1"
+                className="bg-primary/20 p-2 rounded-sm my-1 cursor-pointer flex flex-wrap justify-between gap-2"
                 onClick={()=> navigateToPatient(p.id)}
-              >{p.name}</li>
+              >
+                <p>{p.person.name}</p>
+                <p>{p.entity}</p>
+                <p>{displayAge(differenceInMonths(new Date(), new Date(p.person.birthDate)))}</p>
+              </li>
             ))}
           </ul>
         </CardContent>
@@ -121,6 +125,13 @@ function RouteComponent() {
     </div>
 
   </main>
+}
+
+function displayAge(months: number) {
+  if(months < 12) return months + " meses"
+  const years = Math.floor(months/12)
+  if(years === 1) return "1 ano"
+  return years + " anos"
 }
 
 const statusLabels: Record<AppointmentWithPerson["status"], {name: string, icon:React.ReactElement}> = {

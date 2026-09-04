@@ -7,7 +7,7 @@ import type { AppointmentWithPerson } from '#/entities/appointment.entity'
 import { getAllAppointmentsForPatient, getAppointmentDetails, updateAppointment, updateAppointmentStatus } from '#/server/functions/appointments'
 import { createFileRoute, notFound, useBlocker, useNavigate, useRouter } from '@tanstack/react-router'
 import { useServerFn } from '@tanstack/react-start'
-import { format, isAfter } from 'date-fns'
+import { differenceInMonths, format, isAfter } from 'date-fns'
 import { ArrowLeft, CalendarX2, ClipboardClock, Edit, ExternalLink, Save, SquareCheckBig } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
@@ -94,7 +94,7 @@ function RouteComponent() {
                 <p>Localização: <b>{appointment.therapistPerson.clinic}</b></p>
                 <p>Processo: <b>{appointment.therapistPerson.process}</b></p>
                 <p>Entidade: <b>{appointment.therapistPerson.entity}</b></p>
-                <p>Data de Nascimento: <b>{format(appointment.therapistPerson.person.birthDate, "dd-MM-yyyy")}</b></p>
+                <p>Idade: <b>{displayAge(differenceInMonths(new Date(), new Date(appointment.therapistPerson.person.birthDate)))}</b></p>
                 <p>Diagonóstico Clínico Terapêutico: <b>{appointment.therapistPerson.therapeuticalDiagnosis || "Não definido"}</b></p>
                 <p>Diagonóstico Clínico: <b>{appointment.therapistPerson.clinicalDiagnosis || "Não definido"}</b></p>
               </div>
@@ -158,6 +158,14 @@ function RouteComponent() {
       </section>
     </div>
   </main>
+}
+
+
+function displayAge(months: number) {
+  if(months < 12) return months + " meses"
+  const years = Math.floor(months/12)
+  if(years === 1) return "1 ano"
+  return years + " anos"
 }
 
 const statusLabels: Record<AppointmentWithPerson["status"], {name: string, icon:React.ReactElement}> = {
