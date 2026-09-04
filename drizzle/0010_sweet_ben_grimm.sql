@@ -1,0 +1,1 @@
+ALTER TABLE "therapist_person" ALTER COLUMN "process" SET DATA TYPE integer;

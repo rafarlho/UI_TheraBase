@@ -1,12 +1,19 @@
 import { relations } from 'drizzle-orm'
-import { boolean, pgEnum, pgTable, text, timestamp, uniqueIndex, uuid, varchar } from 'drizzle-orm/pg-core'
+import { boolean, date, index, integer, numeric, pgEnum, pgTable, text, timestamp, uniqueIndex, uuid, varchar } from 'drizzle-orm/pg-core'
+import { user } from './auth-schema'
 
 export const statusEnum = pgEnum("status", ["not_started", "finished", "canceled"])
 
 export const therapist = pgTable("therapist", {
   id: uuid().primaryKey().defaultRandom(),
   name: varchar({length:255}).notNull(),
-  email: varchar({length: 255}).notNull().unique(),
+
+  // Connects user to therapist
+  userId: text("user_id")
+    .notNull()
+    .unique()
+    .references(() => user.id, { onDelete: "cascade" }),
+  
   active: boolean().notNull().default(true),
   createdAt: timestamp("created_at",{withTimezone: true}).defaultNow().notNull(),
   updatedAt: timestamp("updated_at",{withTimezone: true}).defaultNow().notNull().$onUpdate(() => new Date()),
@@ -17,6 +24,7 @@ export const person = pgTable("person", {
   id: uuid().primaryKey().defaultRandom(),
   name: varchar({length:255}).notNull(),
   active: boolean().notNull().default(true),
+  birthDate: date("birth_date").notNull(),
   createdAt: timestamp("created_at",{withTimezone: true}).defaultNow().notNull(),
   updatedAt: timestamp("updated_at",{withTimezone: true}).defaultNow().notNull().$onUpdate(() => new Date()),
 })
@@ -25,6 +33,13 @@ export const therapistPerson = pgTable("therapist_person", {
     id: uuid().primaryKey().defaultRandom(),
     therapistId: uuid("therapist_id").notNull().references(()=> therapist.id),
     personId: uuid("person_id").notNull().references(()=> person.id),
+
+    clinic: varchar().notNull(),
+    process: integer().notNull(),
+    entity: varchar().notNull(),
+    therapeuticalDiagnosis: varchar("therapeutical-diagnosis"),
+    clinicalDiagnosis: varchar("therapeutical-clinical"),
+
     active: boolean().notNull().default(true),
     createdAt: timestamp("created_at",{withTimezone: true}).defaultNow().notNull(),
     updatedAt: timestamp("updated_at",{withTimezone: true}).defaultNow().notNull().$onUpdate(() => new Date()),
@@ -36,16 +51,16 @@ export const therapistPerson = pgTable("therapist_person", {
 
 export const appointment = pgTable("appointment", {
     id: uuid().primaryKey().defaultRandom(),
-    location: varchar({length:255}).notNull(),
     date: timestamp({withTimezone:true}).notNull(),
     notes: text("notes"),
+    duration: integer().notNull().default(45),
     therapistPersonId: uuid("therapist_person_id").notNull().references(() => therapistPerson.id),
     status: statusEnum().notNull().default("not_started"),
     createdAt: timestamp("created_at",{withTimezone: true}).defaultNow().notNull(),
     updatedAt: timestamp("updated_at",{withTimezone: true}).defaultNow().notNull().$onUpdate(() => new Date()),
   },
   (table) => ({
-    therapistPersonIdIdx: uniqueIndex("therapist_person_id_idx").on(table.therapistPersonId)
+    therapistPersonIdIdx: index("therapist_person_id_idx").on(table.therapistPersonId)
   })
 )
 
