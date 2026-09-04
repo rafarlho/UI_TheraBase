@@ -13,19 +13,17 @@ export default function BetterAuthHeader({open = true}: {open?:boolean} ) {
   }
 
   if (session?.user) {
-    return (
-      <div className="flex items-center gap-2">
-        <Button
-          onClick={() => {
-            void authClient.signOut()
-            navigate({to: '/login'})
-          }}
-          className="w-full">
-          <LogOut/>
-          {open && (<p>Sair</p>)}  
-        </Button>
-      </div>
-    )
+    return (<div className='w-full flex justify-between items-center px-2'>
+      {open &&  (<p>{session.user.name}</p>)}  
+      <Button
+        variant={"outline"}
+        onClick={() => {
+          void authClient.signOut()
+          navigate({to: '/login'})
+        }}>
+        <LogOut/>
+      </Button>
+    </div>)
   }
 
   return null

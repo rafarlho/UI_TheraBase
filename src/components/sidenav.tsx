@@ -19,7 +19,7 @@ function Sidenav() {
             <SidebarHeader className="flex flex-row items-center">
                 {mounted && 
                     (open ? 
-                        <img alt="Diana Botelho Logo" className="max-h-20" src={resolvedTheme==="light" ? DBNameCharcoal : DBNameWhite}/>
+                        <img alt="Diana Botelho Logo" className="max-h-20 h-20" src={resolvedTheme==="light" ? DBNameCharcoal : DBNameWhite}/>
                         :
                         <img alt="Diana Botelho Logo" className="max-h-20" src="/DB_Logo_Round.png"/>
                     )
@@ -53,9 +53,18 @@ function Sidenav() {
                     </SidebarMenu>
                 </SidebarGroup>
                 <SidebarGroup>
+                    <SidebarGroupLabel>Conta</SidebarGroupLabel>
+                    <SidebarMenu>
+                        <SidebarMenuItem>
+                            <BetterAuthHeader open={open}/>
+                        </SidebarMenuItem>
+                    </SidebarMenu>
+                </SidebarGroup>
+                <SidebarGroup>
                     <SidebarGroupLabel>Acessibilidade</SidebarGroupLabel>
                     <SidebarMenu>
                         <SidebarMenuItem>
+                            
                             <SidebarMenuButton onClick={() => (setTheme(resolvedTheme === "light" ? "dark": "light"))}>
                                 {mounted && (
                                     <>
@@ -70,7 +79,6 @@ function Sidenav() {
             </SidebarContent>
             <SidebarFooter>
                 <div className="flex flex-col gap-5">
-                    <BetterAuthHeader open={open}/>
                     <SidebarMenuButton onClick={toggleSidebar} className="flex justify-end">
                         <span>Ocultar</span>
                         {open ? <ChevronsLeft/> : <ChevronsRight/>}
