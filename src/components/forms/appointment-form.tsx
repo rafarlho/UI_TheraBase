@@ -1,4 +1,3 @@
-import { statusEnum, therapistPerson } from "#/db/schema"
 import { useForm } from "react-hook-form"
 import z from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -10,13 +9,11 @@ import { Textarea } from "../ui/textarea"
 import { format } from "date-fns"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
 import { useState } from "react"
-import { addPatientToTherapistByName } from "#/services/patients"
 
 z.config(z.locales.pt())
 const appointmentFormSchema = z.object({
     date: z.date({error: "Campo de preenchimento obrigatório"}),
     duration: z.number().min(1,"Campo de preenchimento obrigatório"),
-    location: z.string().min(1,"Campo de preenchimento obrigatório"),
     therapistPersonId: z.string().min(1, "Seleciona um paciente"),
     notes: z.string().optional()
 })
@@ -32,13 +29,10 @@ type AppointementFormProps = {
 }
 
 function AppointmentForm({defaultValues, onSubmit, patientOptions, closeDialog, isEdit = false}: AppointementFormProps) {
-    const [isAddPatient, setAddPatient] = useState(false)
-    const [newPatient, setNewPatient] = useState("")
     if(!defaultValues)
         defaultValues = {
             date: new Date(),
             duration: 45,
-            location: "",
             notes: "",
             therapistPersonId:""
         }
@@ -48,27 +42,14 @@ function AppointmentForm({defaultValues, onSubmit, patientOptions, closeDialog, 
         defaultValues
     })
 
-    async function addNewPatient() {
-
-        const result = await addPatientToTherapistByName(newPatient)
-        patientOptions.push({id: result.id, name: newPatient})
-        setNewPatient("")
-        setAddPatient(false)
-        form.setValue("therapistPersonId", result.id)
-    } 
+    
     
 
     return (
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                     {!isEdit && (
-                        isAddPatient ? 
-                            (<div className="flex gap-2">
-                                <Input value={newPatient} onChange={(e) => setNewPatient(e.target.value)}/>
-                                <Button type="button" variant="destructive" onClick={()=> {setAddPatient(false); setNewPatient("")}}><X/></Button>
-                                <Button type="button" onClick={addNewPatient}><Save/></Button>
-                            </div>)
-                            : (<div className="flex gap-2 items-end">
+                        <div className="flex gap-2 items-end">
                             <FormField
                                 control={form.control}
                                 name="therapistPersonId"
@@ -93,22 +74,8 @@ function AppointmentForm({defaultValues, onSubmit, patientOptions, closeDialog, 
                                     </FormItem>
                                 )}
                             />
-                            <Button type="button" onClick={()=> setAddPatient(true)}><Plus/></Button>
-                        </div>) 
+                        </div>
                 )}
-                <FormField 
-                    control={form.control}
-                    name="location"
-                    render={({field}) => (
-                        <FormItem>
-                            <FormLabel>Localização</FormLabel>
-                            <FormControl>
-                                <Input {...field}/>
-                            </FormControl>
-                            <FormMessage/>
-                        </FormItem>
-                    )}
-                />
                 <FormField 
                     control={form.control}
                     name="duration"

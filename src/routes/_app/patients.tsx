@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate, useRouter } from '@tanstack/react-router'
 import { useReactTable, createColumnHelper, getCoreRowModel, flexRender } from "@tanstack/react-table"
-import type { Person } from '#/entities/person.entity'
+import type { Person, PersonWithTherapist } from '#/entities/person.entity'
 import { getTherapistPatients, getTherapistPatientsByName, updatePatient } from '#/server/functions/persons'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '#/components/ui/table'
 import { ExternalLink, Plus, Trash } from 'lucide-react'
@@ -10,11 +10,13 @@ import { useEffect, useMemo, useState } from 'react'
 import { Input } from '#/components/ui/input'
 import { Button } from '#/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '#/components/ui/dialog'
-import { addPatientToTherapistByName } from '#/services/patients'
-import { removePatientFromTherapist } from '#/server/functions/therapist-person'
+import { addPatientToTherapistByNameAndBirthDate } from '#/services/patients'
+import { removePatientFromTherapist, updateTherapistPerson } from '#/server/functions/therapist-person'
 import { toast } from 'sonner'
 import { getAllAppointmentsForPatient } from '#/server/functions/appointments'
-import { isAfter, isBefore } from 'date-fns'
+import { format, isAfter, isBefore } from 'date-fns'
+import PatientForm from '#/components/forms/patient-form'
+import type {  PatientFormValues } from '#/components/forms/patient-form'
 
 export const Route = createFileRoute('/_app/patients')({
     component: RouteComponent,
@@ -23,7 +25,7 @@ export const Route = createFileRoute('/_app/patients')({
     }
 })
 
-const columnHelper = createColumnHelper<Person>()
+const columnHelper = createColumnHelper<PersonWithTherapist>()
 
 function RouteComponent() {
     const loaderData = Route.useLoaderData()
@@ -31,12 +33,13 @@ function RouteComponent() {
     const navigate = useNavigate()
     
     const [search, setSearch] = useState("")
-    const [patients, setPatients] = useState<Person[]>([])
+    const [patients, setPatients] = useState<PersonWithTherapist[]>([])
     const [openCreateDialog, setOpenCreateDialog] = useState(false)
     const [openRemoveDialog, setOpenRemoveDialog] = useState(false)
     const [selectedPatientToRemove, setSelectedPatientToRemove] = useState<string|null>(null)
 
     const updatePatientFn = useServerFn(updatePatient)
+    const updateTherapistPersonFn = useServerFn(updateTherapistPerson)
     const getCurrentTherapistPatientsFn = useServerFn(getTherapistPatientsByName)
 
     useEffect(()=> setPatients(loaderData),[loaderData])
@@ -54,6 +57,7 @@ function RouteComponent() {
     },[search])
 
     const getAllAppointmentsForPatientFn = useServerFn(getAllAppointmentsForPatient)
+
     async function navigateToPatient(id: string) {
         const allAppointment = await getAllAppointmentsForPatientFn({data:{id}})
         const finishedAppointments = allAppointment.filter(a => a.status === "finished" && isBefore(a.date, new Date()))
@@ -71,13 +75,55 @@ function RouteComponent() {
             onSave={newValue => updatePatientFn({data: {id: cell.row.original.id, name: newValue}})}
             />
         },),
+        columnHelper.accessor("birthDate",{
+            header: "Data de Nascimento",
+            cell: cell => <EditableCell 
+            value={format(cell.getValue(), "dd-MM-yyyy")}
+            onSave={newValue => updatePatientFn({data: {id: cell.row.original.id, birthDate: format(new Date(newValue), "yyyy-MM-dd")}})}
+            />
+        },),
+        columnHelper.accessor("therapistPerson.clinic",{
+            header: "Clinica",
+            cell: cell => <EditableCell 
+            value={cell.getValue()}
+            onSave={newValue => updateTherapistPersonFn({data: {therapistPersonId: cell.row.original.therapistPerson!.id, clinic: newValue}})}
+            />
+        },),
+        columnHelper.accessor("therapistPerson.process",{
+            header: "Processo",
+            cell: cell => <EditableCell 
+            value={cell.getValue()+""}
+            onSave={newValue => updateTherapistPersonFn({data: {therapistPersonId: cell.row.original.therapistPerson!.id, process: +newValue}})}
+            />
+        },),
+        columnHelper.accessor("therapistPerson.entity",{
+            header: "Entidade",
+            cell: cell => <EditableCell 
+            value={cell.getValue()}
+            onSave={newValue => updateTherapistPersonFn({data: {therapistPersonId: cell.row.original.therapistPerson!.id, entity: newValue}})}
+            />
+        },),
+        columnHelper.accessor("therapistPerson.therapeuticalDiagnosis",{
+            header: "Diag. Terapêutico",
+            cell: cell => <EditableCell 
+            value={cell.getValue() ?? ""}
+            onSave={newValue => updateTherapistPersonFn({data: {therapistPersonId: cell.row.original.therapistPerson!.id, therapeuticalDiagnosis: newValue}})}
+            />
+        },),
+        columnHelper.accessor("therapistPerson.clinicalDiagnosis",{
+            header: "Diag. Clínico",
+            cell: cell => <EditableCell 
+            value={cell.getValue() ?? ""}
+            onSave={newValue => updateTherapistPersonFn({data: {therapistPersonId: cell.row.original.therapistPerson!.id, clinicalDiagnosis: newValue}})}
+            />
+        },),
         columnHelper.accessor("id",{header: "", cell: (cell) => <div className='flex w-full justify-end gap-3'>
                     <Button variant={'destructive'} onClick={()=> {setSelectedPatientToRemove(cell.getValue()); setOpenRemoveDialog(true)}}><Trash/></Button>
                     <Button onClick={()=> navigateToPatient(cell.getValue())}><ExternalLink/></Button>
                 </div>
                 }),
 
-    ],[updatePatientFn])
+    ],[updatePatientFn, updateTherapistPersonFn])
 
     const table = useReactTable({
         data:patients,
@@ -86,8 +132,8 @@ function RouteComponent() {
         getRowId: (row) => row.id,
     })
 
-    async function handleCreatePatient(name: string) {
-        await addPatientToTherapistByName(name)
+    async function handleCreatePatient(values: PatientFormValues) {
+        await addPatientToTherapistByNameAndBirthDate(values)
         setOpenCreateDialog(false)
         router.invalidate()
         toast.success(`O paciente ${name} foi adicionado com sucesso`)
@@ -140,21 +186,21 @@ function RouteComponent() {
     return (
         <div className='h-dvh p-5 flex flex-col min-w-0 overflow-hidden gap-3 w-full'>
             <h1 className='font-heading font-bold text-2xl'> Pacientes</h1>
-            <div className='flex justify-between items-center'>
-                <div className='flex gap-2'>
+            <div className='flex gap-2 justify-end'>
+                <div>
                     <Input 
                         placeholder='Procurar paciente...'
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                     />
-                    <Dialog open={openCreateDialog}>
-                        <Button onClick={() => setOpenCreateDialog(true)}><Plus/> Adicionar</Button>
-                        {createDialog({handleSubmit: handleCreatePatient, setOpenCreateDialog})}
-                    </Dialog>
-                    <Dialog open={openRemoveDialog}>
-                        {removeDialog({handleRemovePatient, setOpenRemoveDialog})}
-                    </Dialog>
                 </div>
+                <Dialog open={openCreateDialog}>
+                    <Button onClick={() => setOpenCreateDialog(true)}><Plus/> Adicionar</Button>
+                    {createDialog({handleSubmit: handleCreatePatient, setOpenCreateDialog})}
+                </Dialog>
+                <Dialog open={openRemoveDialog}>
+                    {removeDialog({handleRemovePatient, setOpenRemoveDialog})}
+                </Dialog>
             </div>
             {patients.length ? renderTable() :<span>Não foram encontrados pacientes associados a ti{search ? " com esse nome. Valida a tua procura e tenta de novo.": "."}</span> }
             
@@ -162,25 +208,19 @@ function RouteComponent() {
     )
 }
 
-function createDialog({handleSubmit,setOpenCreateDialog}:{handleSubmit: (name:string) => void, setOpenCreateDialog: (value:boolean) => void}) {
-    const [name, setName] = useState("")
+function createDialog({handleSubmit,setOpenCreateDialog}:{handleSubmit: (value:PatientFormValues) => void, setOpenCreateDialog: (value:boolean) => void}) {
     
     return(
         <DialogContent showCloseButton={false}>
             <DialogHeader>
                 <DialogTitle>Adicionar um novo paciente</DialogTitle>
                 <DialogDescription>
-                    <Input 
-                            placeholder='Adicionar paciente...'
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
-                        />
+                    <PatientForm
+                        onSubmit={handleSubmit}
+                        closeDialog={()=> setOpenCreateDialog(false)}
+                    />
                 </DialogDescription>
-                </DialogHeader>
-            <DialogFooter>
-                <Button variant="outline" onClick={() => setOpenCreateDialog(false)}>Cancelar</Button>
-                <Button disabled={name.trim().length === 0} onClick={() => handleSubmit(name)}>Adicionar</Button>
-            </DialogFooter>
+            </DialogHeader>
         </DialogContent>
     )
 }

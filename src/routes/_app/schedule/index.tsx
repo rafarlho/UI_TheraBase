@@ -131,7 +131,7 @@ function renderCalendarEvent(occurrence: EventCalendarOccurrence<AppointmentWith
           <>
             <span className="flex items-center gap-1 text-[10px] text-muted-foreground truncate">
               <MapPin className="size-3 shrink-0" />
-              {appointment!.location}
+              {appointment!.therapistPerson.clinic}
             </span>
           </>
         )}

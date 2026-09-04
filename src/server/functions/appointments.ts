@@ -41,7 +41,6 @@ export const updateAppointment = createServerFn({method: "POST"})
 
 export const createAppointment = createServerFn({method: "POST"})
     .validator(z.object({
-        location:  z.string().min(1),
         date: z.date(),
         duration: z.number(),
         therapistPersonId: z.uuid(),

@@ -91,12 +91,19 @@ function RouteComponent() {
               <div>
                 <p>Início: <b>{format(appointment.date, "HH:mm 'de' EEEE, d 'de' MMMM 'de'  yyyy", {locale: pt}) }</b></p>
                 <p>Duração: <b>{appointment.duration} minutos</b></p>
-                <p>Localização: <b>{appointment.location}</b></p>
+                <p>Localização: <b>{appointment.therapistPerson.clinic}</b></p>
+                <p>Processo: <b>{appointment.therapistPerson.process}</b></p>
+                <p>Entidade: <b>{appointment.therapistPerson.entity}</b></p>
+                <p>Data de Nascimento: <b>{format(appointment.therapistPerson.person.birthDate, "dd-MM-yyyy")}</b></p>
+                <p>Diagonóstico Clínico Terapêutico: <b>{appointment.therapistPerson.therapeuticalDiagnosis || "Não definido"}</b></p>
+                <p>Diagonóstico Clínico: <b>{appointment.therapistPerson.clinicalDiagnosis || "Não definido"}</b></p>
               </div>
-              <Badge className="w-fit" variant={appointment.status === 'not_started' ? 'secondary' : appointment.status === 'canceled' ? "destructive" : 'default'}>
-                {statusLabels[appointment.status].icon}
-                {statusLabels[appointment.status].name}
-              </Badge>
+              <div>
+                <Badge className="w-fit text-lg" variant={appointment.status === 'not_started' ? 'secondary' : appointment.status === 'canceled' ? "destructive" : 'default'}>
+                  {statusLabels[appointment.status].icon}
+                  {statusLabels[appointment.status].name}
+                </Badge>
+              </div>
             </CardDescription>
           </CardHeader>
           <CardContent className='flex gap-2 items-center'>
@@ -154,7 +161,7 @@ function RouteComponent() {
 }
 
 const statusLabels: Record<AppointmentWithPerson["status"], {name: string, icon:React.ReactElement}> = {
-    not_started:{name: 'Por iniciar', icon:<ClipboardClock/> },
+    not_started:{name: 'Por iniciar', icon:<ClipboardClock /> },
     canceled: {name: 'Cancelada', icon:<CalendarX2/> },
     finished: {name: 'Terminada', icon:<SquareCheckBig/> },
   }

@@ -57,6 +57,27 @@
       "when": 1788342791961,
       "tag": "0007_wonderful_randall",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1788534382026,
+      "tag": "0008_chubby_night_nurse",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1788535285641,
+      "tag": "0009_next_cerebro",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1788536971831,
+      "tag": "0010_sweet_ben_grimm",
+      "breakpoints": true
     }
   ]
 }
