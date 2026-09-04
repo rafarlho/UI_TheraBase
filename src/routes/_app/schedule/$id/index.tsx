@@ -15,12 +15,9 @@ import { toast } from 'sonner'
 
 export const Route = createFileRoute('/_app/schedule/$id/')({
   component: RouteComponent,
-  // pendingComponent: PendingSkeleton,
-  // pendingMs: 200,
-  // pendingMinMs: 300, 
   loader: async ({params}) => {
     const currentAppointment = await getAppointmentDetails({data:{id:params.id}})
-    const allPatientAppointements = await getAllAppointmentsForPatient({data: {id: currentAppointment.therapistPersonId}})
+    const allPatientAppointements = await getAllAppointmentsForPatient({data: {id: currentAppointment.therapistPerson.person.id}})
     const allPatientAppointementsExceptCurrent = allPatientAppointements.filter(a => a.id !== currentAppointment.id)
     return { appointment: currentAppointment , appointments: allPatientAppointementsExceptCurrent}
   }

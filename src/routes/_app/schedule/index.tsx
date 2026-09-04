@@ -10,7 +10,7 @@ import { getByTherapistAndDate, updateAppointment } from '#/server/functions/app
 import { getPatientOptions } from '#/server/functions/persons'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useServerFn } from '@tanstack/react-start'
-import { addMinutes, differenceInMinutes, isEqual } from 'date-fns'
+import { addMinutes, differenceInMinutes, endOfWeek, isEqual, startOfWeek } from 'date-fns'
 import { CalendarX2, ClipboardClock, MapPin, PlusIcon, SquareCheckBig } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { pt } from "date-fns/locale"
@@ -21,7 +21,7 @@ export const Route = createFileRoute('/_app/schedule/')({
   component: RouteComponent,
   loader: async () => {
     const [appointementsLoaded, patientsLoaded] = await Promise.all([
-      getByTherapistAndDate({data:{startDate: new Date(), endDate: new Date()}}),
+      getByTherapistAndDate({data:{startDate: startOfWeek(new Date()), endDate: endOfWeek(new Date())}}),
       getPatientOptions()
     ])
     return {appointementsLoaded, patientsLoaded}
@@ -84,7 +84,7 @@ function RouteComponent() {
             resize: false,
             selectSlot: true,
           }}
-          defaultView="day"
+          defaultView="week"
           className="h-full w-full"
           renderEvent={(props) => renderCalendarEvent(props.occurrence, props.view)}
         >

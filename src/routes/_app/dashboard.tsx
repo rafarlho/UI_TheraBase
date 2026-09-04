@@ -1,13 +1,15 @@
 import { Badge } from '#/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
 import type { AppointmentWithPerson } from '#/entities/appointment.entity'
-import { getByTherapistAndDate, getTodaysAppointmentsByTherapist } from '#/server/functions/appointments'
+import { getAllAppointmentsForPatient, getByTherapistAndDate } from '#/server/functions/appointments'
 import { getCurrentSession } from '#/server/functions/auth'
 import { getTherapistPatients } from '#/server/functions/persons'
-import { createFileRoute } from '@tanstack/react-router'
-import { endOfWeek, format, isSameDay, startOfWeek } from 'date-fns'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { useServerFn } from '@tanstack/react-start'
+import { endOfWeek, format, isAfter, isBefore, isSameDay, startOfWeek } from 'date-fns'
 import { pt } from "date-fns/locale"
 import { Calendar, CalendarX, CalendarX2, CheckSquareIcon, ClipboardClock, Clock, SquareCheckBig } from 'lucide-react'
+import { toast } from 'sonner'
 
 export const Route = createFileRoute('/_app/dashboard')({
   component: RouteComponent,
@@ -24,13 +26,15 @@ export const Route = createFileRoute('/_app/dashboard')({
 function RouteComponent() {
 
   const { patients, weekAppointments, session} = Route.useLoaderData()
-  const weeksPatientsSet = new Set()
-  const weeksPatients = weekAppointments.map(a => {
-    if(weeksPatientsSet.has(a.therapistPerson.person.id)) return 
-    weeksPatientsSet.add(a.therapistPerson.person.id)
-    return a.therapistPerson.person
+  const weeksPatientsMap = new Map()
+  weekAppointments.forEach(a => {
+    weeksPatientsMap.set(a.therapistPerson.person.id, a.therapistPerson.person)
   })
+  const weeksPatients = Array.from(weeksPatientsMap.values())
 
+  const getAllAppointmentsForPatientFn = useServerFn(getAllAppointmentsForPatient)
+
+  const navigate = useNavigate()
 
   const todaysAppointments = weekAppointments.filter(a => isSameDay(new Date(), a.date))
   const weekStatus = [
@@ -56,6 +60,15 @@ function RouteComponent() {
     },
   ]
 
+  async function navigateToPatient(id: string) {
+    const allAppointment = await getAllAppointmentsForPatientFn({data:{id}})
+    const finishedAppointments = allAppointment.filter(a => a.status === "finished" && isBefore(a.date, new Date()))
+    const toAttendAppointments = allAppointment.filter(a => a.status === "not_started" && isAfter(a.date, new Date()))
+    if(finishedAppointments.length) navigate({to: `/schedule/${finishedAppointments[finishedAppointments.length-1].id}` })
+    else if(toAttendAppointments.length) navigate({to: `/schedule/${toAttendAppointments[toAttendAppointments.length-1].id}` })
+    else toast.info("Não existem consultas para o paciente selecionado")
+  }
+
   return <main className="h-dvh w-full p-10 flex flex-col ">
     <h1 className='font-heading text-3xl font-bold'>Olá {session?.name.split(" ")[0]}</h1>
     <span className="text-xl">{format(new Date(), "EEEE, d 'de' MMMM 'de' yyyy", {locale: pt})}</span>
@@ -78,7 +91,11 @@ function RouteComponent() {
         <CardHeader><CardTitle>Consultas de hoje ({todaysAppointments.length})</CardTitle></CardHeader>
         <CardContent className="overflow-auto min-h-0 flex-1">
           {todaysAppointments.map((a,_i) => (
-            <div key={_i} className='grid grid-cols-[auto_70%_1fr] gap-5  p-5 cursor-pointer hover:bg-background/20 border rounded-md' >
+            <div 
+              key={_i} 
+              className='grid grid-cols-[auto_70%_1fr] gap-5  p-5 cursor-pointer hover:bg-background/20 border rounded-md' 
+              onClick={()=> navigate({to: `/schedule/${a.id}` })}
+            >
               <span>{format(a.date,"HH:MM")}</span>
               <span>{a.therapistPerson.person.name} ({a.location})</span>
               <Badge className="w-fit text-[10px] justify-self-end" variant={a.status === 'not_started' ? 'secondary' : a.status === 'canceled' ? "destructive" : 'default'}>
@@ -94,7 +111,11 @@ function RouteComponent() {
         <CardContent className="overflow-auto min-h-0 flex-1">
           <ul>
             {weeksPatients.map((p,_i)=>(
-              <li key={_i} className="bg-primary/20 p-2 rounded-sm ">{p?.name}</li>
+              <li 
+                key={_i} 
+                className="bg-primary/20 p-2 rounded-sm"
+                onClick={()=> navigateToPatient(p.id)}
+              >{p.name}</li>
             ))}
           </ul>
         </CardContent>

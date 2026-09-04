@@ -1,7 +1,7 @@
 import { db } from "#/db";
 import { appointment, person, therapistPerson } from "#/db/schema";
 import type { NewAppointment, Appointment, AppointmentWithPerson } from "#/entities/appointment.entity";
-import { and, eq, exists, gte, lte, ne } from "drizzle-orm";
+import { and, desc, eq, exists, gte, lte, ne, or } from "drizzle-orm";
 import { endOfDay, endOfToday, startOfDay, startOfToday } from "date-fns";
 
 export const appointmentRepository = {
@@ -67,7 +67,7 @@ export const appointmentRepository = {
             .innerJoin(therapistPerson, eq(appointment.therapistPersonId, therapistPerson.id))
             .where(
                 and(
-                    eq(therapistPerson.id, id),
+                    eq(therapistPerson.personId, id),
                     ne(appointment.status,"canceled"),
                     eq(therapistPerson.therapistId, therapistId),
                     
@@ -87,31 +87,23 @@ export const appointmentRepository = {
     },
 
     async update(id: string, therapistId: string, data: Partial<NewAppointment>): Promise<Appointment | undefined> {
-    const [updated] = await db
-        .update(appointment)
-        .set(data)
-        .where(
-        and(
-            eq(appointment.id, id),
-            exists(db.select().from(therapistPerson)
-                .where(
+        const [updated] = await db.update(appointment).set(data)
+            .where(
                 and(
-                    eq(
-                        therapistPerson.id,
-                        appointment.therapistPersonId,
-                    ),
-                    eq(
-                        therapistPerson.therapistId,
-                        therapistId,
+                    eq(appointment.id, id),
+                    exists(db.select().from(therapistPerson)
+                        .where(
+                            and(
+                                eq(therapistPerson.id, appointment.therapistPersonId,),
+                                eq(therapistPerson.therapistId, therapistId),
+                            ),
+                        ),
                     ),
                 ),
-                ),
-            ),
-        ),
-        )
-        .returning()
+            )
+            .returning()
 
-    return updated
+        return updated
     },
 
     async updateStatus(id: string, therapistId:string, status: "finished" | "canceled") : Promise<boolean> {
@@ -125,5 +117,5 @@ export const appointmentRepository = {
             )
         ).returning({id: appointment.id})
         return result.length>0
-    }
+    },
 }
