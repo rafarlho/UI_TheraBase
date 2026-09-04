@@ -89,6 +89,8 @@ function RouteComponent() {
             resize: false,
             selectSlot: true,
           }}
+          dayStartHour={8}
+          dayEndHour={20}
           defaultView="week"
           className="h-full w-full"
           renderEvent={(props) => renderCalendarEvent(props.occurrence, props.view)}
