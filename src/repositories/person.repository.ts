@@ -1,6 +1,7 @@
 import { db } from "#/db";
 import { person, therapist, therapistPerson } from "#/db/schema";
 import type { NewPerson, Person, PersonWithTherapist } from "#/entities/person.entity";
+import { decryptOptional } from "#/lib/encryption";
 import { and, eq, ilike } from "drizzle-orm";
 
 export const personRepository = {
@@ -45,7 +46,7 @@ export const personRepository = {
                 ) 
             )
             .then(rows => rows.map(({person, therapistPerson, therapist})=>({
-                ...person, therapistPerson: {...therapistPerson, therapist}
+                ...person, therapistPerson: {...therapistPerson, clinicalDiagnosis: decryptOptional(therapistPerson.clinicalDiagnosis),therapeuticalDiagnosis: decryptOptional(therapistPerson.therapeuticalDiagnosis),therapist}
             })))
         
     },
@@ -64,7 +65,7 @@ export const personRepository = {
                 ) 
             )
             .then(rows => rows.map(({person, therapistPerson, therapist})=>({
-                ...person, therapistPerson: {...therapistPerson, therapist}
+                ...person, therapistPerson: {...therapistPerson, clinicalDiagnosis: decryptOptional(therapistPerson.clinicalDiagnosis),therapeuticalDiagnosis: decryptOptional(therapistPerson.therapeuticalDiagnosis),therapist}
             })))
         
     },

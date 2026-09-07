@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate, useRouter } from '@tanstack/react-router'
 import { useReactTable, createColumnHelper, getCoreRowModel, flexRender } from "@tanstack/react-table"
-import type { Person, PersonWithTherapist } from '#/entities/person.entity'
+import type { PersonWithTherapist } from '#/entities/person.entity'
 import { getTherapistPatients, getTherapistPatientsByName, updatePatient } from '#/server/functions/persons'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '#/components/ui/table'
 import { ExternalLink, Plus, Trash } from 'lucide-react'
