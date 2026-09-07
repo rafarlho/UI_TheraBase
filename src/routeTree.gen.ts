@@ -10,22 +10,47 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AppRouteImport } from './routes/_app'
-import { Route as AppDashboardRouteImport } from './routes/_app/dashboard'
-import { Route as AppScheduleRouteImport } from './routes/_app/schedule'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as PendingApprovalRouteImport } from './routes/pending-approval'
+import { Route as RegisterRouteImport } from './routes/register'
+import { Route as AppIndexRouteImport } from './routes/_app/index'
+import { Route as AppPatientsRouteImport } from './routes/_app/patients'
+import { Route as AppScheduleIndexRouteImport } from './routes/_app/schedule/index'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as AppScheduleIdIndexRouteImport } from './routes/_app/schedule/$id/index'
 
 const AppRoute = AppRouteImport.update({
   id: '/_app',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AppDashboardRoute = AppDashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PendingApprovalRoute = PendingApprovalRouteImport.update({
+  id: '/pending-approval',
+  path: '/pending-approval',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RegisterRoute = RegisterRouteImport.update({
+  id: '/register',
+  path: '/register',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppIndexRoute = AppIndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => AppRoute,
 } as any)
-const AppScheduleRoute = AppScheduleRouteImport.update({
-  id: '/schedule',
-  path: '/schedule',
+const AppPatientsRoute = AppPatientsRouteImport.update({
+  id: '/patients',
+  path: '/patients',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppScheduleIndexRoute = AppScheduleIndexRouteImport.update({
+  id: '/schedule/',
+  path: '/schedule/',
   getParentRoute: () => AppRoute,
 } as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
@@ -33,37 +58,83 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppScheduleIdIndexRoute = AppScheduleIdIndexRouteImport.update({
+  id: '/schedule/$id/',
+  path: '/schedule/$id/',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof AppRouteWithChildren
-  '/dashboard': typeof AppDashboardRoute
-  '/schedule': typeof AppScheduleRoute
+  '/': typeof AppIndexRoute
+  '/login': typeof LoginRoute
+  '/pending-approval': typeof PendingApprovalRoute
+  '/register': typeof RegisterRoute
+  '/patients': typeof AppPatientsRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/schedule/': typeof AppScheduleIndexRoute
+  '/schedule/$id/': typeof AppScheduleIdIndexRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof AppRouteWithChildren
-  '/dashboard': typeof AppDashboardRoute
-  '/schedule': typeof AppScheduleRoute
+  '/login': typeof LoginRoute
+  '/pending-approval': typeof PendingApprovalRoute
+  '/register': typeof RegisterRoute
+  '/patients': typeof AppPatientsRoute
+  '/': typeof AppIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/schedule': typeof AppScheduleIndexRoute
+  '/schedule/$id': typeof AppScheduleIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof AppRouteWithChildren
-  '/_app/dashboard': typeof AppDashboardRoute
-  '/_app/schedule': typeof AppScheduleRoute
+  '/login': typeof LoginRoute
+  '/pending-approval': typeof PendingApprovalRoute
+  '/register': typeof RegisterRoute
+  '/_app/patients': typeof AppPatientsRoute
+  '/_app/': typeof AppIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/_app/schedule/': typeof AppScheduleIndexRoute
+  '/_app/schedule/$id/': typeof AppScheduleIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/dashboard' | '/schedule' | '/api/auth/$'
+  fullPaths:
+    | '/'
+    | '/login'
+    | '/pending-approval'
+    | '/register'
+    | '/patients'
+    | '/api/auth/$'
+    | '/schedule/'
+    | '/schedule/$id/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/dashboard' | '/schedule' | '/api/auth/$'
+  to:
+    | '/login'
+    | '/pending-approval'
+    | '/register'
+    | '/patients'
+    | '/'
+    | '/api/auth/$'
+    | '/schedule'
+    | '/schedule/$id'
   id:
-    '__root__' | '/_app' | '/_app/dashboard' | '/_app/schedule' | '/api/auth/$'
+    | '__root__'
+    | '/_app'
+    | '/login'
+    | '/pending-approval'
+    | '/register'
+    | '/_app/patients'
+    | '/_app/'
+    | '/api/auth/$'
+    | '/_app/schedule/'
+    | '/_app/schedule/$id/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
+  LoginRoute: typeof LoginRoute
+  PendingApprovalRoute: typeof PendingApprovalRoute
+  RegisterRoute: typeof RegisterRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
 }
 
@@ -76,18 +147,46 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_app/dashboard': {
-      id: '/_app/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof AppDashboardRouteImport
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pending-approval': {
+      id: '/pending-approval'
+      path: '/pending-approval'
+      fullPath: '/pending-approval'
+      preLoaderRoute: typeof PendingApprovalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/register': {
+      id: '/register'
+      path: '/register'
+      fullPath: '/register'
+      preLoaderRoute: typeof RegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_app/': {
+      id: '/_app/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof AppIndexRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/schedule': {
-      id: '/_app/schedule'
+    '/_app/patients': {
+      id: '/_app/patients'
+      path: '/patients'
+      fullPath: '/patients'
+      preLoaderRoute: typeof AppPatientsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/schedule/': {
+      id: '/_app/schedule/'
       path: '/schedule'
-      fullPath: '/schedule'
-      preLoaderRoute: typeof AppScheduleRouteImport
+      fullPath: '/schedule/'
+      preLoaderRoute: typeof AppScheduleIndexRouteImport
       parentRoute: typeof AppRoute
     }
     '/api/auth/$': {
@@ -97,23 +196,37 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_app/schedule/$id/': {
+      id: '/_app/schedule/$id/'
+      path: '/schedule/$id'
+      fullPath: '/schedule/$id/'
+      preLoaderRoute: typeof AppScheduleIdIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
 interface AppRouteChildren {
-  AppDashboardRoute: typeof AppDashboardRoute
-  AppScheduleRoute: typeof AppScheduleRoute
+  AppPatientsRoute: typeof AppPatientsRoute
+  AppIndexRoute: typeof AppIndexRoute
+  AppScheduleIndexRoute: typeof AppScheduleIndexRoute
+  AppScheduleIdIndexRoute: typeof AppScheduleIdIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
-  AppDashboardRoute: AppDashboardRoute,
-  AppScheduleRoute: AppScheduleRoute,
+  AppPatientsRoute: AppPatientsRoute,
+  AppIndexRoute: AppIndexRoute,
+  AppScheduleIndexRoute: AppScheduleIndexRoute,
+  AppScheduleIdIndexRoute: AppScheduleIdIndexRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
+  LoginRoute: LoginRoute,
+  PendingApprovalRoute: PendingApprovalRoute,
+  RegisterRoute: RegisterRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
 }
 export const routeTree = rootRouteImport

@@ -1,5 +1,5 @@
 import type { therapist } from "#/db/schema";
-import type { InferSelectModel } from "drizzle-orm";
+import type { InferInsertModel, InferSelectModel } from "drizzle-orm";
 
 export type Therapist = InferSelectModel<typeof therapist>
-export type NewTherapist = InferSelectModel<typeof therapist>
+export type NewTherapist = InferInsertModel<typeof therapist>

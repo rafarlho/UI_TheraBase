@@ -1,7 +1,7 @@
 import { db } from "#/db";
 import { person, therapist, therapistPerson } from "#/db/schema";
-import type { NewPerson, Person } from "#/entities/person.entity";
-import { and, eq } from "drizzle-orm";
+import type { NewPerson, Person, PersonWithTherapist } from "#/entities/person.entity";
+import { and, eq, ilike } from "drizzle-orm";
 
 export const personRepository = {
     
@@ -12,12 +12,61 @@ export const personRepository = {
         )})
     },
 
-    async getPatientsByTherapistId(therapistId:string) : Promise<Person[]> {
-        return db.select({person})
+    async findByNameAndBirthDate(name:string, birthDate:string): Promise <Person | undefined> {
+        return db.query.person.findFirst({where: and(
+            ilike(person.name, name), 
+            eq(person.birthDate, birthDate),
+            eq(person.active, true)
+        )})
+    },
+
+    async findPatientOptionsByTherapist(therapistId: string): Promise<{ id: string; name: string }[]> {
+        return db.select({ id: therapistPerson.id, name: person.name })
+            .from(therapistPerson)
+            .innerJoin(person, eq(therapistPerson.personId, person.id))
+            .where(
+                and(
+                    eq(therapistPerson.therapistId, therapistId),
+                    eq(therapistPerson.active, true)
+                )
+            )
+    },
+
+    async getPatientsByTherapistId(therapistId:string) : Promise<PersonWithTherapist[]> {
+        return db.select({person, therapistPerson, therapist})
             .from(person)
             .innerJoin(therapistPerson, eq(person.id, therapistPerson.personId))
-            .where(eq(therapistPerson.therapistId, therapistId))
-            .then(rows => rows.map(r=>r.person))
+            .innerJoin(therapist, eq(therapistPerson.therapistId, therapist.id))
+            .where(
+                and(
+                    eq(therapistPerson.therapistId, therapistId),
+                    eq(therapistPerson.active, true)
+                    
+                ) 
+            )
+            .then(rows => rows.map(({person, therapistPerson, therapist})=>({
+                ...person, therapistPerson: {...therapistPerson, therapist}
+            })))
+        
+    },
+
+    async getPatientsByTherapistIdAndName(therapistId:string, name?: string) : Promise<PersonWithTherapist[]> {
+        return db.select({person, therapistPerson, therapist})
+            .from(person)
+            .innerJoin(therapistPerson, eq(person.id, therapistPerson.personId))
+            .innerJoin(therapist, eq(therapistPerson.therapistId, therapist.id))
+            .where(
+                and(
+                    eq(therapistPerson.therapistId, therapistId),
+                    eq(therapistPerson.active, true),
+                    ilike(person.name, `%${name}%`)
+                    
+                ) 
+            )
+            .then(rows => rows.map(({person, therapistPerson, therapist})=>({
+                ...person, therapistPerson: {...therapistPerson, therapist}
+            })))
+        
     },
 
     async create(data: NewPerson): Promise<Person> {
