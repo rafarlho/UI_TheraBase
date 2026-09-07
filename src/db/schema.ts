@@ -64,6 +64,15 @@ export const appointment = pgTable("appointment", {
   })
 )
 
+export const auditLog = pgTable("audit_log", {
+  id: uuid().primaryKey().defaultRandom(),
+  therapistId: uuid("therapist_id").notNull(),
+  action: text().notNull(),
+  entityType: text("entity_type").notNull(),
+  entityId: uuid("entity_id").notNull(),
+  date: timestamp("date", { withTimezone: true }).defaultNow().notNull(),
+})
+
 // Relation definitions
 export const therapistRelations = relations(therapist, ({many}) => ({
   therapistPersons: many(therapistPerson)

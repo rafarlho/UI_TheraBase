@@ -43,7 +43,7 @@ export const updatePatient = createServerFn({method: "POST"})
         const therapist = await requireTherapist()
         const therapistPerson = await therapistPersonRepository.getPatientsByTherapistIdAndPersonId(therapist.id, data.id)
         if(therapistPerson) throw new Error("Paciente não está associado ao terapeuta atual.") 
-        return personRepository.update(data.id, {...data, birthDate: data.birthDate ?format(data.birthDate, "yyyy-MM-dd"): undefined})
+        return personRepository.update(therapist.id,data.id, {...data, birthDate: data.birthDate ?format(data.birthDate, "yyyy-MM-dd"): undefined})
     })
 
 export const createPerson = createServerFn({method: "POST"})
@@ -52,7 +52,7 @@ export const createPerson = createServerFn({method: "POST"})
         birthDate: z.date().min(1)
     }))
     .handler(async ({data}) => {
-        await requireTherapist()
-        return personRepository.create({...data, birthDate: format(data.birthDate, "yyyy-MM-dd")})
+        const therapist = await requireTherapist()
+        return personRepository.create(therapist.id, {...data, birthDate: format(data.birthDate, "yyyy-MM-dd")})
     } 
 )

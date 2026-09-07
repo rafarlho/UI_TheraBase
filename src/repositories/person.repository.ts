@@ -3,6 +3,7 @@ import { person, therapist, therapistPerson } from "#/db/schema";
 import type { NewPerson, Person, PersonWithTherapist } from "#/entities/person.entity";
 import { decryptOptional } from "#/lib/encryption";
 import { and, eq, ilike } from "drizzle-orm";
+import { auditLogRepository } from "./audit-log.repository";
 
 export const personRepository = {
     
@@ -70,21 +71,18 @@ export const personRepository = {
         
     },
 
-    async create(data: NewPerson): Promise<Person> {
+    async create(therapistId: string, data: NewPerson): Promise<Person> {
         const [created] = await db.insert(person).values(data).returning();
+        await auditLogRepository.log({therapistId, action: "create",entityId: created.id, entityType: "person"})
         return created
     },
 
-    async update(id:string, data: Partial<NewPerson>): Promise<Person> {
+    async update(therapistId: string, id:string, data: Partial<NewPerson>): Promise<Person> {
         const [updated] = await db.update(person)
             .set(data)
             .where(eq(person.id,id))
             .returning()
+        await auditLogRepository.log({therapistId, action: "update",entityId: id, entityType: "person"})
         return updated
     },
-
-    async deactivate(id: string) : Promise<void> {
-        await db.update(person).set({active: false}).where(eq(person.id, id
-        ))
-    }
 }

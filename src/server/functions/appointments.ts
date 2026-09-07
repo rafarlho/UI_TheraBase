@@ -52,7 +52,7 @@ export const createAppointment = createServerFn({method: "POST"})
         const therapistPerson = await therapistPersonRepository.findByIdForTherapist(data.therapistPersonId, therapist.id)
         if(!therapistPerson) throw new Error('Patient does not belong to therapist')
 
-        return appointmentRepository.create(data)
+        return appointmentRepository.create(data, therapistId)
     })
 
 export const getAppointmentDetails = createServerFn({method:"GET"})

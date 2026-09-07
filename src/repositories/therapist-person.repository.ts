@@ -3,6 +3,7 @@ import { therapistPerson } from "#/db/schema";
 import type { NewTherapistPerson, TherapistPerson } from "#/entities/therapist-person.entity";
 import { decryptOptional, encryptOptional } from "#/lib/encryption";
 import { and, eq } from "drizzle-orm";
+import { auditLogRepository } from "./audit-log.repository";
 
 export const therapistPersonRepository = {
 
@@ -44,6 +45,8 @@ export const therapistPersonRepository = {
             therapeuticalDiagnosis: encryptOptional(data.therapeuticalDiagnosis),
         }
         const [created] = await db.insert(therapistPerson).values(encryptedData).returning();
+        
+        await auditLogRepository.log({therapistId: data.therapistId, action: "create",entityId: created.id, entityType: "therapist_person"})
         return {
             ...created,
             clinicalDiagnosis: decryptOptional(created.clinicalDiagnosis),
@@ -65,21 +68,13 @@ export const therapistPersonRepository = {
             )
             .returning()
         
-
+        await auditLogRepository.log({therapistId, action: "update",entityId: id, entityType: "therapist_person"})
+        
         return {
             ...updated,
             clinicalDiagnosis: decryptOptional(updated.clinicalDiagnosis),
             therapeuticalDiagnosis: decryptOptional(updated.therapeuticalDiagnosis),
         } 
-    },
-
-    async deactivate(id: string, therapistId: string) : Promise<void> {
-        await db.update(therapistPerson).set({active: false}).where(
-            and(
-                eq(therapistPerson.therapistId, therapistId),
-                eq(therapistPerson.id, id)
-            )
-        )
     },
 
     async deactivateByIds(therapistId: string, personId:string) : Promise<void> {
@@ -89,5 +84,6 @@ export const therapistPersonRepository = {
                 eq(therapistPerson.therapistId, therapistId)
             )
         )
+        await auditLogRepository.log({therapistId, action: "delete",entityId: personId, entityType: "therapist_person"})
     }
 }

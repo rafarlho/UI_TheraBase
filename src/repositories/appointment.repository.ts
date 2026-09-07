@@ -4,6 +4,7 @@ import type { NewAppointment, Appointment, AppointmentWithPerson } from "#/entit
 import { and, eq, exists, gte, lte, ne } from "drizzle-orm";
 import { endOfDay, endOfToday, startOfDay, startOfToday } from "date-fns";
 import { decryptOptional, encryptOptional } from "#/lib/encryption";
+import { auditLogRepository } from "./audit-log.repository";
 
 export const appointmentRepository = {
 
@@ -89,11 +90,13 @@ export const appointmentRepository = {
         return db.query.appointment.findMany({where: eq(appointment.therapistPersonId, therapistPersonId)}).then((rows) => rows.map(a => ({...a, notes: decryptOptional(a.notes)})))
     },
 
-    async create(data: NewAppointment): Promise<Appointment> {
+    async create(data: NewAppointment, therapistId: string): Promise<Appointment> {
         const encryptedData = {...data,
             notes: encryptOptional(data.notes),
         }
         const [created] = await db.insert(appointment).values(encryptedData).returning();
+        
+        await auditLogRepository.log({therapistId, action: "create",entityId: created.id, entityType: "appointment"})
         return {...created, notes: decryptOptional(created.notes)}
     },
 
@@ -117,6 +120,8 @@ export const appointmentRepository = {
             )
             .returning()
 
+        await auditLogRepository.log({therapistId, action: "update",entityId: updated.id, entityType: "appointment"})
+
         return {...updated, notes: decryptOptional(updated.notes)}
     },
 
@@ -130,6 +135,7 @@ export const appointmentRepository = {
                 )))
             )
         ).returning({id: appointment.id})
+        await auditLogRepository.log({therapistId, action: "update",entityId: id, entityType: "appointment"})
         return result.length>0
     },
 }
