@@ -85,11 +85,6 @@ export const appointmentRepository = {
             .orderBy(appointment.date)
             .then((rows) => rows.map(r => ({...r.appointment, notes: decryptOptional(r.appointment.notes)})))
     },
-
-    async findByTherapistPersonId(therapistPersonId: string): Promise<Appointment[]> {
-        return db.query.appointment.findMany({where: eq(appointment.therapistPersonId, therapistPersonId)}).then((rows) => rows.map(a => ({...a, notes: decryptOptional(a.notes)})))
-    },
-
     async create(data: NewAppointment, therapistId: string): Promise<Appointment> {
         const encryptedData = {...data,
             notes: encryptOptional(data.notes),

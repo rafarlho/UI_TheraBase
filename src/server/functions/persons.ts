@@ -42,7 +42,7 @@ export const updatePatient = createServerFn({method: "POST"})
     .handler(async ({data}) =>{
         const therapist = await requireTherapist()
         const therapistPerson = await therapistPersonRepository.getPatientsByTherapistIdAndPersonId(therapist.id, data.id)
-        if(therapistPerson) throw new Error("Paciente não está associado ao terapeuta atual.") 
+        if(!therapistPerson) throw new Error("Paciente não está associado ao terapeuta atual.") 
         return personRepository.update(therapist.id,data.id, {...data, birthDate: data.birthDate ?format(data.birthDate, "yyyy-MM-dd"): undefined})
     })
 

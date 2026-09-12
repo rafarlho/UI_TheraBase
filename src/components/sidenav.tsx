@@ -1,4 +1,4 @@
-import { ChevronsLeft, ChevronsRight, Clock, FileUser, Home, Moon, Sun } from "lucide-react"
+import { ChevronsLeft, ChevronsRight, Clock, Cookie, FileUser, Handshake, Home, Moon, ShieldCheck, Sun } from "lucide-react"
 import { useTheme } from "./theme-provider"
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "./ui/sidebar"
 import DBNameCharcoal from "@/assets/DBNameCharcoal.png"
@@ -72,6 +72,26 @@ function Sidenav() {
                                         {resolvedTheme === "light"  ? "Mudar para escuro" : "Mudar para claro"}
                                     </>
                                 )}
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton asChild>
+                                <Link to={"/privacy"} target="_blank">
+                                    <Cookie/>
+                                    <span>Política de Privacidade</span>
+                                </Link>
+                            </SidebarMenuButton>
+                            <SidebarMenuButton asChild>
+                                <Link to={"/terms"} target="_blank">
+                                    <Handshake/>
+                                    <span>Termos de Serviço</span>
+                                </Link>
+                            </SidebarMenuButton>
+                            <SidebarMenuButton asChild>
+                                <Link to={"/dpa"} target="_blank">
+                                    <ShieldCheck/>
+                                    <span>Acordo de Tratamento de Dados</span>
+                                </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
                     </SidebarMenu>

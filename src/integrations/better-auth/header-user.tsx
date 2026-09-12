@@ -1,5 +1,6 @@
 import { Button } from '#/components/ui/button'
 import { authClient } from '#/lib/auth-client'
+import { cn } from '#/lib/utils'
 import { useNavigate } from '@tanstack/react-router'
 import { LogOut } from 'lucide-react'
 
@@ -13,10 +14,11 @@ export default function BetterAuthHeader({open = true}: {open?:boolean} ) {
   }
 
   if (session?.user) {
-    return (<div className='w-full flex justify-between items-center px-2'>
+    return (<div className={cn("w-full flex justify-between items-center", open ? "px-2": "")}>
       {open &&  (<p>{session.user.name}</p>)}  
       <Button
         variant={"outline"}
+        className={open ? "": "-ml-1.5"}
         onClick={() => {
           void authClient.signOut()
           navigate({to: '/login'})

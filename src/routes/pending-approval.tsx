@@ -1,7 +1,7 @@
 import { Button } from '#/components/ui/button'
 import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from '#/components/ui/card'
 import { getCurrentSession } from '#/server/functions/auth'
-import { createFileRoute, redirect, useNavigate } from '@tanstack/react-router'
+import { createFileRoute, Link, redirect, useNavigate } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/pending-approval')({
     component: RouteComponent,
@@ -27,8 +27,19 @@ function RouteComponent() {
 
                 </CardDescription>
             </CardHeader>
-            <CardFooter>
+            <CardFooter className='flex flex-col'>
                 <Button onClick={()=>  navigate({to: "/login"})}>Navegar para Login</Button>
+                <div className="mt-5 pt-6 border-t border-border flex gap-4 text-sm text-muted-foreground flex-row flex-wrap w-full">
+                    <Link to="/privacy" className="underline hover:text-foreground">
+                        Política de Privacidade
+                    </Link>
+                    <Link to="/terms" className="underline hover:text-foreground">
+                        Termos de Serviço
+                    </Link>
+                    <Link to="/dpa" className="underline hover:text-foreground">
+                        Acordo de Tratamento de Dados
+                    </Link>
+                </div>
             </CardFooter>
         </Card> 
     </div>

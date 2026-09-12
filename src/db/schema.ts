@@ -1,5 +1,5 @@
 import { relations } from 'drizzle-orm'
-import { boolean, date, index, integer, numeric, pgEnum, pgTable, text, timestamp, uniqueIndex, uuid, varchar } from 'drizzle-orm/pg-core'
+import { boolean, date, index, integer, pgEnum, pgTable, text, timestamp, uniqueIndex, uuid, varchar } from 'drizzle-orm/pg-core'
 import { user } from './auth-schema'
 
 export const statusEnum = pgEnum("status", ["not_started", "finished", "canceled"])
@@ -14,6 +14,11 @@ export const therapist = pgTable("therapist", {
     .unique()
     .references(() => user.id, { onDelete: "cascade" }),
   
+  termsAcceptedAt: timestamp("terms_accepted_at",{withTimezone:true}).notNull(),
+  termsVersion: varchar("terms_version", {length: 50}).notNull(),
+  dpaAcceptedAt: timestamp("dpa_accepted_at",{withTimezone:true}).notNull(),
+  dpaVersion: varchar("dpa_version", {length: 50}).notNull(),
+
   active: boolean().notNull().default(true),
   createdAt: timestamp("created_at",{withTimezone: true}).defaultNow().notNull(),
   updatedAt: timestamp("updated_at",{withTimezone: true}).defaultNow().notNull().$onUpdate(() => new Date()),
