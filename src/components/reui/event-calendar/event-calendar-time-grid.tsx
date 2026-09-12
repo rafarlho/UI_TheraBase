@@ -84,7 +84,7 @@ function EventCalendarTimeGrid({
   render,
   dayStartHour,
   dayEndHour,
-  showAllDay = true,
+  showAllDay = false,
   interval: intervalProp,
   ...props
 }: EventCalendarTimeGridProps) {

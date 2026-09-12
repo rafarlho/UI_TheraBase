@@ -150,12 +150,14 @@ function RouteComponent() {
     function renderTable() {
         return (
             <div className="min-h-0 flex-1 p-2">
-                <div className='shadow-xl'>
+                <div className='shadow-xl w-full overflow-x-auto'>
+                    <div className='min-w-max'>
                     <Table className='bg-foreground/5' >
                         <TableHeader>
                             {table.getHeaderGroups().map((headerGroup) =>(
                                 <TableRow key={headerGroup.id}>
                                     {headerGroup.headers.map((header) => (
+                                        
                                         <TableHead key={header.id} className='font-bold'>
                                             {header.isPlaceholder ? 
                                                 null : 
@@ -178,13 +180,14 @@ function RouteComponent() {
                             ))}
                         </TableBody>
                     </Table>
+                    </div>
                 </div>
             </div>
         )
     }
 
     return (
-        <div className='h-dvh p-5 flex flex-col min-w-0 overflow-hidden gap-3 w-full'>
+        <div className='h-screen p-5 flex flex-col min-w-0 overflow-hidden gap-3 w-full '>
             <h1 className='font-heading font-bold text-2xl'> Pacientes</h1>
             <div className='flex gap-2 justify-end'>
                 <div>

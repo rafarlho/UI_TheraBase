@@ -42,6 +42,7 @@ function RouteComponent() {
   const apiRef = useRef<EventCalendarApi<AppointmentWithPerson> | null>(null)
   const navigate = useNavigate()
 
+
   useEffect(()=> setAppointments(appointementsLoaded.map(a => parseAppointmentToCalendarEvent(a))),[appointementsLoaded])
 
 

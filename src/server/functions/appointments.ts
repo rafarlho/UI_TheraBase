@@ -13,8 +13,8 @@ export const getTodaysAppointmentsByTherapist = createServerFn({method: "GET"})
 
 export const getByTherapistAndDate = createServerFn({method: "GET"})
     .validator(z.object({
-        startDate: z.date().min(1),
-        endDate: z.date().min(1)
+        startDate: z.date(),
+        endDate: z.date()
     }))
     .handler(async ({data}) => {
         const therapist = await requireTherapist()

@@ -49,7 +49,7 @@ export const updatePatient = createServerFn({method: "POST"})
 export const createPerson = createServerFn({method: "POST"})
     .validator(z.object({
         name: z.string().min(1),
-        birthDate: z.date().min(1)
+        birthDate: z.date()
     }))
     .handler(async ({data}) => {
         const therapist = await requireTherapist()

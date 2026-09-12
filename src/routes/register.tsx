@@ -50,7 +50,7 @@ function RouteComponent() {
                 </CardDescription>
             </CardHeader>
             <CardFooter className='flex flex-col'>
-                <p className='font-bold'>Ao clicar no botão, aceitar as políticas de provacidade, termos de serviço e acordo de proteção de dados.</p>
+                <p className='font-bold'>Ao clicar no botão, aceitas as políticas de privacidade, termos de serviço e acordo de proteção de dados.</p>
                 <Button className='w-full' onClick={createProfile}>Vamos lá!</Button>
                 <div className="mt-5 pt-6 border-t border-border flex gap-4 text-sm text-muted-foreground flex-row flex-wrap w-full">
                     <Link to="/privacy" target='_blank' className="underline hover:text-foreground">
