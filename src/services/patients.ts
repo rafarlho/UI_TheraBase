@@ -5,9 +5,7 @@ import { format } from "date-fns"
 import { toast } from "sonner"
 
 export const addPatientToTherapistByNameAndBirthDate =async (values: PatientFormValues) => {
-    console.log("Trying to retrive")
     let person = await getPersonByNameAndBirthDate({data:{name: values.name, birthDate: format(values.birthDate, "yyyy-MM-dd")}}) 
-    console.log(person)
     if(!person)  {
         person = await createPerson({data:{name: values.name,birthDate: values.birthDate}})
         return await addPatientToTherapist({data:{

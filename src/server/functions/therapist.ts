@@ -13,6 +13,10 @@ export const createMyTherapistProfile = createServerFn({method: "POST"})
 
         return therapistRepository.create({
             userId:session.user.id,
-            name: data.name
+            name: data.name,
+            dpaAcceptedAt: new Date(),
+            termsAcceptedAt: new Date(),
+            dpaVersion:"1",
+            termsVersion:"1"
         })
     })

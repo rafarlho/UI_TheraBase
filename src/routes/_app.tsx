@@ -18,7 +18,7 @@ export const Route = createFileRoute('/_app')({
     )
 
     if(!session.isActive) throw redirect({to: '/pending-approval'})
-
+      
     const therapist = await getCurrentTherapist()
 
     if(!therapist) throw redirect({to: '/register'})

@@ -1,4 +1,4 @@
-import { createFileRoute, redirect, useNavigate } from '@tanstack/react-router'
+import { createFileRoute, Link, redirect, useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
 
 import { authClient } from '#/lib/auth-client'
@@ -148,7 +148,8 @@ function LoginPage() {
                     </Button>
                   </form>
                 </CardContent>
-                <CardFooter className='flex gap-0.5'>
+                <CardFooter className='flex gap-0.5 flex-col items-start'>
+                  <div className='flex gap-1'>
                     <p>{isRegistering ? "Já tens conta? Entra ": "Ainda não tens conta? Cria uma "}</p>
                     <button
                       type="button"
@@ -160,102 +161,20 @@ function LoginPage() {
                     >
                       aqui
                     </button>
+                  </div>
+                  <div className="mt-5 pt-6 border-t border-border flex gap-4 text-sm text-muted-foreground flex-row flex-wrap w-full">
+                    <Link to="/privacy" className="underline hover:text-foreground">
+                      Política de Privacidade
+                    </Link>
+                    <Link to="/terms" className="underline hover:text-foreground">
+                      Termos de Serviço
+                    </Link>
+                    <Link to="/dpa" className="underline hover:text-foreground">
+                      Acordo de Tratamento de Dados
+                    </Link>
+                  </div>
                 </CardFooter>
             </Card> 
-    
-    
       </div>
-    // <main className="min-h-screen flex items-center justify-center p-6">
-    //   <div className="w-full max-w-md space-y-6">
-    //     <div>
-    //       <h1 className="text-2xl font-semibold">
-    //         {isRegistering ? 'Criar conta' : 'Entrar'}
-    //       </h1>
-
-    //       <p className="text-sm text-neutral-500 mt-2">
-    //         {isRegistering
-    //           ? 'Cria uma conta para testar o Better Auth.'
-    //           : 'Entra com a tua conta.'}
-    //       </p>
-    //     </div>
-
-    //     <form onSubmit={handleSubmit} className="space-y-4">
-    //       {isRegistering && (
-    //         <div>
-    //           <label className="block text-sm font-medium mb-1">
-    //             Nome
-    //           </label>
-
-    //           <input
-    //             value={name}
-    //             onChange={(event) => setName(event.target.value)}
-    //             required
-    //             className="w-full h-10 border rounded px-3"
-    //           />
-    //         </div>
-    //       )}
-
-    //       <div>
-    //         <label className="block text-sm font-medium mb-1">
-    //           Email
-    //         </label>
-
-    //         <input
-    //           type="email"
-    //           value={email}
-    //           onChange={(event) => setEmail(event.target.value)}
-    //           required
-    //           className="w-full h-10 border rounded px-3"
-    //         />
-    //       </div>
-
-    //       <div>
-    //         <label className="block text-sm font-medium mb-1">
-    //           Password
-    //         </label>
-
-    //         <input
-    //           type="password"
-    //           value={password}
-    //           onChange={(event) => setPassword(event.target.value)}
-    //           required
-    //           minLength={8}
-    //           className="w-full h-10 border rounded px-3"
-    //         />
-    //       </div>
-
-    //       {error && (
-    //         <div className="text-sm text-red-600">
-    //           {error}
-    //         </div>
-    //       )}
-
-    //       <button
-    //         type="submit"
-    //         disabled={loading}
-    //         className="w-full h-10 bg-black text-white rounded disabled:opacity-50"
-    //       >
-    //         {loading
-    //           ? 'A processar...'
-    //           : isRegistering
-    //             ? 'Criar conta'
-    //             : 'Entrar'}
-    //       </button>
-    //     </form>
-
-    //     <button
-    //       type="button"
-    //       onClick={() => {
-    //         setIsRegistering((value) => !value)
-    //         setError(null)
-    //       }}
-    //       className="text-sm underline"
-    //     >
-    //       {isRegistering
-    //         ? 'Já tenho uma conta'
-    //         : 'Ainda não tenho uma conta'}
-    //     </button>
-    //   </div>
-    // </main>
   )
 }

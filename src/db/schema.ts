@@ -1,5 +1,5 @@
 import { relations } from 'drizzle-orm'
-import { boolean, date, index, integer, numeric, pgEnum, pgTable, text, timestamp, uniqueIndex, uuid, varchar } from 'drizzle-orm/pg-core'
+import { boolean, date, index, integer, pgEnum, pgTable, text, timestamp, uniqueIndex, uuid, varchar } from 'drizzle-orm/pg-core'
 import { user } from './auth-schema'
 
 export const statusEnum = pgEnum("status", ["not_started", "finished", "canceled"])
@@ -14,6 +14,11 @@ export const therapist = pgTable("therapist", {
     .unique()
     .references(() => user.id, { onDelete: "cascade" }),
   
+  termsAcceptedAt: timestamp("terms_accepted_at",{withTimezone:true}).notNull(),
+  termsVersion: varchar("terms_version", {length: 50}).notNull(),
+  dpaAcceptedAt: timestamp("dpa_accepted_at",{withTimezone:true}).notNull(),
+  dpaVersion: varchar("dpa_version", {length: 50}).notNull(),
+
   active: boolean().notNull().default(true),
   createdAt: timestamp("created_at",{withTimezone: true}).defaultNow().notNull(),
   updatedAt: timestamp("updated_at",{withTimezone: true}).defaultNow().notNull().$onUpdate(() => new Date()),
@@ -63,6 +68,15 @@ export const appointment = pgTable("appointment", {
     therapistPersonIdIdx: index("therapist_person_id_idx").on(table.therapistPersonId)
   })
 )
+
+export const auditLog = pgTable("audit_log", {
+  id: uuid().primaryKey().defaultRandom(),
+  therapistId: uuid("therapist_id").notNull(),
+  action: text().notNull(),
+  entityType: text("entity_type").notNull(),
+  entityId: uuid("entity_id").notNull(),
+  date: timestamp("date", { withTimezone: true }).defaultNow().notNull(),
+})
 
 // Relation definitions
 export const therapistRelations = relations(therapist, ({many}) => ({

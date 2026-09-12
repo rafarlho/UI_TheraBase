@@ -2,7 +2,7 @@ import { Button } from '#/components/ui/button'
 import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from '#/components/ui/card'
 import { getCurrentSession, getCurrentTherapist } from '#/server/functions/auth'
 import { createMyTherapistProfile } from '#/server/functions/therapist'
-import { useRouter } from '@tanstack/react-router'
+import { Link, useRouter } from '@tanstack/react-router'
 import { createFileRoute, redirect, useNavigate } from '@tanstack/react-router'
 import { useServerFn } from '@tanstack/react-start'
 
@@ -18,7 +18,7 @@ export const Route = createFileRoute('/register')({
         )
     
         if(!session.isActive) throw redirect({to: '/pending-approval'})
-    
+        
         const therapist = await getCurrentTherapist()
     
         if(therapist) throw redirect({to: '/'})
@@ -49,8 +49,20 @@ function RouteComponent() {
 
                 </CardDescription>
             </CardHeader>
-            <CardFooter>
+            <CardFooter className='flex flex-col'>
+                <p className='font-bold'>Ao clicar no botão, aceitar as políticas de provacidade, termos de serviço e acordo de proteção de dados.</p>
                 <Button className='w-full' onClick={createProfile}>Vamos lá!</Button>
+                <div className="mt-5 pt-6 border-t border-border flex gap-4 text-sm text-muted-foreground flex-row flex-wrap w-full">
+                    <Link to="/privacy" target='_blank' className="underline hover:text-foreground">
+                        Política de Privacidade
+                    </Link>
+                    <Link to="/terms" target='_blank' className="underline hover:text-foreground">
+                        Termos de Serviço
+                    </Link> 
+                    <Link to="/dpa" target='_blank' className="underline hover:text-foreground">
+                        Acordo de Tratamento de Dados
+                    </Link>
+                </div>
             </CardFooter>
         </Card> 
     </div>

@@ -3,6 +3,8 @@ import { appointment, person, therapistPerson } from "#/db/schema";
 import type { NewAppointment, Appointment, AppointmentWithPerson } from "#/entities/appointment.entity";
 import { and, eq, exists, gte, lte, ne } from "drizzle-orm";
 import { endOfDay, endOfToday, startOfDay, startOfToday } from "date-fns";
+import { decryptOptional, encryptOptional } from "#/lib/encryption";
+import { auditLogRepository } from "./audit-log.repository";
 
 export const appointmentRepository = {
 
@@ -17,7 +19,8 @@ export const appointmentRepository = {
                     lte(appointment.date, endOfToday()),
                 ),
             )
-            .then((rows) => rows.map(r => r.appointment))
+            .then((rows) => rows.map(r => ({...r.appointment, notes: decryptOptional(r.appointment.notes)})))
+
     },
 
     async findByTherapistAndDate(therapistId: string, startDate: Date, endDate: Date): Promise<AppointmentWithPerson[]> {
@@ -33,8 +36,11 @@ export const appointmentRepository = {
             ))
         return rows.map(({ appointment, therapistPerson, person }) => ({
             ...appointment,
+            notes: decryptOptional(appointment.notes),
             therapistPerson: {
             ...therapistPerson,
+            clinicalDiagnosis: decryptOptional(therapistPerson.clinicalDiagnosis),
+            therapeuticalDiagnosis: decryptOptional(therapistPerson.therapeuticalDiagnosis),
             person,
             },
         }))
@@ -54,9 +60,12 @@ export const appointmentRepository = {
             )
         const mappedRows = rows.map(({ appointment, therapistPerson, person }) => ({
             ...appointment,
+            notes: decryptOptional(appointment.notes),
             therapistPerson: {
             ...therapistPerson,
-            person,
+            clinicalDiagnosis: decryptOptional(therapistPerson.clinicalDiagnosis),
+            therapeuticalDiagnosis: decryptOptional(therapistPerson.therapeuticalDiagnosis),
+            person ,
             },
         }))
         return mappedRows[0]
@@ -74,20 +83,23 @@ export const appointmentRepository = {
                 ),
             )
             .orderBy(appointment.date)
-            .then((rows) => rows.map(r => r.appointment))
+            .then((rows) => rows.map(r => ({...r.appointment, notes: decryptOptional(r.appointment.notes)})))
     },
-
-    async findByTherapistPersonId(therapistPersonId: string): Promise<Appointment[]> {
-        return db.query.appointment.findMany({where: eq(appointment.therapistPersonId, therapistPersonId)})
-    },
-
-    async create(data: NewAppointment): Promise<Appointment> {
-        const [created] = await db.insert(appointment).values(data).returning();
-        return created
+    async create(data: NewAppointment, therapistId: string): Promise<Appointment> {
+        const encryptedData = {...data,
+            notes: encryptOptional(data.notes),
+        }
+        const [created] = await db.insert(appointment).values(encryptedData).returning();
+        
+        await auditLogRepository.log({therapistId, action: "create",entityId: created.id, entityType: "appointment"})
+        return {...created, notes: decryptOptional(created.notes)}
     },
 
     async update(id: string, therapistId: string, data: Partial<NewAppointment>): Promise<Appointment | undefined> {
-        const [updated] = await db.update(appointment).set(data)
+        const encryptedData = {...data,
+            notes: encryptOptional(data.notes),
+        }
+        const [updated] = await db.update(appointment).set(encryptedData)
             .where(
                 and(
                     eq(appointment.id, id),
@@ -103,7 +115,9 @@ export const appointmentRepository = {
             )
             .returning()
 
-        return updated
+        await auditLogRepository.log({therapistId, action: "update",entityId: updated.id, entityType: "appointment"})
+
+        return {...updated, notes: decryptOptional(updated.notes)}
     },
 
     async updateStatus(id: string, therapistId:string, status: "finished" | "canceled"|"not_started") : Promise<boolean> {
@@ -116,6 +130,7 @@ export const appointmentRepository = {
                 )))
             )
         ).returning({id: appointment.id})
+        await auditLogRepository.log({therapistId, action: "update",entityId: id, entityType: "appointment"})
         return result.length>0
     },
 }
