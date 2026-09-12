@@ -32,7 +32,7 @@ function Home() {
       <TooltipProvider>
         <SidebarProvider>
           <Sidenav/>
-          <main className='flex grow'>
+          <main className='flex min-w-0 flex-1 overflow-hidden'>
             <Outlet/>
             <Toaster/>
           </main>
