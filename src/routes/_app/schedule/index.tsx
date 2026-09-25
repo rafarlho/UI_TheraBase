@@ -6,13 +6,13 @@ import type { CalendarEvent, EventCalendarOccurrence } from '#/components/reui/e
 import CreateDialog from '#/components/schedule/create-dialog'
 import { Button } from '#/components/ui/button'
 import type { AppointmentWithPerson } from '#/entities/appointment.entity'
-import { getByTherapistAndDate, updateAppointment, updateAppointmentStatus } from '#/server/functions/appointments'
+import { deleteAppointment, getByTherapistAndDate, updateAppointment, updateAppointmentStatus } from '#/server/functions/appointments'
 import { getPatientOptions } from '#/server/functions/persons'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import type { UseNavigateResult } from '@tanstack/react-router'
 import { useServerFn } from '@tanstack/react-start'
 import { addMinutes, differenceInMinutes, endOfWeek, format, isEqual, startOfWeek } from 'date-fns'
-import { Link, MapPin, PlusIcon } from 'lucide-react'
+import { Delete, Link, MapPin, PlusIcon, Trash } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { pt } from "date-fns/locale"
 import { ptI18n } from '#/utils/calendar-portuguese'
@@ -43,11 +43,13 @@ function RouteComponent() {
   const updateAppointementFn = useServerFn(updateAppointment)
   const updateAppointmentStatusFn = useServerFn(updateAppointmentStatus)
   const getByTherapistAndDateFn = useServerFn(getByTherapistAndDate)
+  const deleteAppointmentFn = useServerFn(deleteAppointment)
 
+  
   const apiRef = useRef<EventCalendarApi<AppointmentWithPerson> | null>(null)
-
+  
   const navigate = useNavigate()
-
+  
 
   useEffect(()=> setAppointments(appointementsLoaded.map(a => parseAppointmentToCalendarEvent(a))),[appointementsLoaded])
   useEffect(()=> {if(!openCreateDialog) setSelectedDates(null)},[openCreateDialog])
@@ -62,7 +64,7 @@ function RouteComponent() {
         }})
       })
       await getAppointmentsByRange()
-  }
+    }
 
   async function updateStatus(id: string, status: "not_started" | "finished" | "canceled") {
     const result = await updateAppointmentStatusFn({data:{id, status}})
@@ -72,6 +74,16 @@ function RouteComponent() {
       
     }
     else toast.error("Não foi possível atualizar a consulta")
+  }
+
+  async function handleDelete(id:string) {
+    const result = await deleteAppointmentFn({data:{id}})
+    if(result) {
+      await getAppointmentsByRange()
+      toast.success("Consulta eliminada com sucesso!")
+      
+    }
+    else toast.error("Não foi possível eliminar a consulta")
   }
 
   async function getAppointmentsByRange() {
@@ -101,7 +113,7 @@ function RouteComponent() {
           onEventsChange={handleEventChange}
           onDateChange={getAppointmentsByRange}
           onViewChange={getAppointmentsByRange}
-          renderAgendaEvent={props => renderCalendarEvent(props.occurrence, "agenda", navigate, updateStatus)}
+          renderAgendaEvent={props => renderCalendarEvent(props.occurrence, "agenda", navigate, updateStatus, handleDelete)}
           apiRef={apiRef}
           scrollToHour={(new Date()).getHours()}
           interactions={{
@@ -116,7 +128,7 @@ function RouteComponent() {
           dayEndHour={20}
           defaultView="week"
           className="h-full w-full"
-          renderEvent={(props) => renderCalendarEvent(props.occurrence, props.view, navigate, updateStatus)}
+          renderEvent={(props) => renderCalendarEvent(props.occurrence, props.view, navigate, updateStatus, handleDelete)}
         >
           <div className='flex justify-between'>
             <EventCalendarNav className="min-w-0">
@@ -136,13 +148,20 @@ function RouteComponent() {
   )
 }
 
-function renderCalendarEvent(occurrence: EventCalendarOccurrence<AppointmentWithPerson>, view: string, navigate: UseNavigateResult<string>, updateStatus: (id:string, status: "not_started" | "finished" | "canceled")=>void){
+function renderCalendarEvent(
+  occurrence: EventCalendarOccurrence<AppointmentWithPerson>, 
+  view: string, 
+  navigate: UseNavigateResult<string>, 
+  updateStatus: (id:string, status: "not_started" | "finished" | "canceled")=>void,
+  handleDelete: (id:string) => void
+){
 
   
   const appointment = occurrence.event.data
   const patient = appointment?.therapistPerson.person.name
   const parts = patient?.split(" ")
   const firstAndLastName = parts && parts.length > 1 ? parts[0] + " " + parts[parts.length-1] : patient
+
 
   return <DropdownMenu >
       <DropdownMenuTrigger className={cn(
@@ -171,7 +190,8 @@ function renderCalendarEvent(occurrence: EventCalendarOccurrence<AppointmentWith
       </DropdownMenuTrigger>
       <DropdownMenuContent>
         <DropdownMenuGroup>
-          <DropdownMenuItem onClick={() => navigate({to: `/schedule/${appointment?.id}/`})}><Link/>Ver consulta</DropdownMenuItem>
+          <DropdownMenuItem onClick={() => navigate({to: `/schedule/${appointment?.id}/`})}><Link/>Ver</DropdownMenuItem>
+          <DropdownMenuItem onClick={()=> handleDelete(appointment!.id)}><Trash/>Eliminar</DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuGroup>
           <DropdownMenuLabel>Estado</DropdownMenuLabel>

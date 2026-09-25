@@ -78,3 +78,12 @@ export const updateAppointmentStatus = createServerFn({method: "POST"})
         const therapist = await requireTherapist()
         return await appointmentRepository.updateStatus(data.id, therapist.id, data.status)
     })
+
+export const deleteAppointment = createServerFn({method:"POST"})
+    .validator(z.object({
+        id: z.uuid(),
+    }))
+    .handler(async ({data}) => {
+        const therapist = await requireTherapist()
+        return await appointmentRepository.deleteAppointment(data.id, therapist.id)
+    })

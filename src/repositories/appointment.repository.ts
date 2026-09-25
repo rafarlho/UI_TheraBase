@@ -133,4 +133,10 @@ export const appointmentRepository = {
         await auditLogRepository.log({therapistId, action: "update",entityId: id, entityType: "appointment"})
         return result.length>0
     },
+
+    async deleteAppointment(id: string, therapistId: string) {
+        await db.delete(appointment).where(eq(appointment.id,id))
+        await auditLogRepository.log({therapistId, action: "delete",entityId: id, entityType: "appointment"})
+        return true
+    }
 }
