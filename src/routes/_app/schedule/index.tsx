@@ -6,16 +6,19 @@ import type { CalendarEvent, EventCalendarOccurrence } from '#/components/reui/e
 import CreateDialog from '#/components/schedule/create-dialog'
 import { Button } from '#/components/ui/button'
 import type { AppointmentWithPerson } from '#/entities/appointment.entity'
-import { getByTherapistAndDate, updateAppointment } from '#/server/functions/appointments'
+import { getByTherapistAndDate, updateAppointment, updateAppointmentStatus } from '#/server/functions/appointments'
 import { getPatientOptions } from '#/server/functions/persons'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import type { UseNavigateResult } from '@tanstack/react-router'
 import { useServerFn } from '@tanstack/react-start'
 import { addMinutes, differenceInMinutes, endOfWeek, format, isEqual, startOfWeek } from 'date-fns'
-import { CalendarX2, ClipboardClock, MapPin, PlusIcon, SquareCheckBig } from 'lucide-react'
+import { Link, MapPin, PlusIcon } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { pt } from "date-fns/locale"
 import { ptI18n } from '#/utils/calendar-portuguese'
-import { Badge } from '#/components/ui/badge'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuTrigger } from '#/components/ui/dropdown-menu'
+import { toast } from 'sonner'
+import { cn } from '#/lib/utils'
 
 export const Route = createFileRoute('/_app/schedule/')({
   component: RouteComponent,
@@ -37,11 +40,12 @@ function RouteComponent() {
   const [openCreateDialog, setOpenCreateDialog] = useState(false)
 
   const updateAppointementFn = useServerFn(updateAppointment)
+  const updateAppointmentStatusFn = useServerFn(updateAppointmentStatus)
   const getByTherapistAndDateFn = useServerFn(getByTherapistAndDate)
 
   const apiRef = useRef<EventCalendarApi<AppointmentWithPerson> | null>(null)
-  const navigate = useNavigate()
 
+  const navigate = useNavigate()
 
   useEffect(()=> setAppointments(appointementsLoaded.map(a => parseAppointmentToCalendarEvent(a))),[appointementsLoaded])
 
@@ -58,6 +62,15 @@ function RouteComponent() {
       await getAppointmentsByRange()
   }
 
+  async function updateStatus(id: string, status: "not_started" | "finished" | "canceled") {
+    const result = await updateAppointmentStatusFn({data:{id, status}})
+    if(result) {
+      await getAppointmentsByRange()
+      toast.success("Consulta atualizada com sucesso!")
+      
+    }
+    else toast.error("Não foi possível atualizar a consulta")
+  }
 
   async function getAppointmentsByRange() {
     const {start, end} = apiRef.current!.getActiveRange()
@@ -78,11 +91,11 @@ function RouteComponent() {
           todayClassName='font-bold text-foreground! bg-secondary/20!'
           i18n={ptI18n}
           events={appointements}
-          onEventClick={(e: any)=> navigate({to: `/schedule/${e.event.id}/`})}
+          // onEventClick={(e: any)=> navigate({to: `/schedule/${e.event.id}/`})}
           onEventsChange={handleEventChange}
           onDateChange={getAppointmentsByRange}
           onViewChange={getAppointmentsByRange}
-          renderAgendaEvent={props => renderCalendarEvent(props.occurrence, "agenda")}
+          renderAgendaEvent={props => renderCalendarEvent(props.occurrence, "agenda", navigate, updateStatus)}
           apiRef={apiRef}
           scrollToHour={(new Date()).getHours()}
           interactions={{
@@ -90,11 +103,14 @@ function RouteComponent() {
             resize: false,
             selectSlot: true,
           }}
+          classNames={{
+            event: "!p-0"
+          }}
           dayStartHour={8}
           dayEndHour={20}
           defaultView="week"
           className="h-full w-full"
-          renderEvent={(props) => renderCalendarEvent(props.occurrence, props.view)}
+          renderEvent={(props) => renderCalendarEvent(props.occurrence, props.view, navigate, updateStatus)}
         >
           <div className='flex justify-between'>
             <EventCalendarNav className="min-w-0">
@@ -114,36 +130,55 @@ function RouteComponent() {
   )
 }
 
-function renderCalendarEvent(occurrence: EventCalendarOccurrence<AppointmentWithPerson>, view: string){
-  const statusLabels: Record<AppointmentWithPerson["status"], {name: string, icon:React.ReactElement}> = {
-    not_started:{name: 'Por iniciar', icon:<ClipboardClock/> },
-    canceled: {name: 'Cancelada', icon:<CalendarX2/> },
-    finished: {name: 'Terminada', icon:<SquareCheckBig/> },
-  }
+function renderCalendarEvent(occurrence: EventCalendarOccurrence<AppointmentWithPerson>, view: string, navigate: UseNavigateResult<string>, updateStatus: (id:string, status: "not_started" | "finished" | "canceled")=>void){
+
+  
   const appointment = occurrence.event.data
-  return <div className='flex flex-row justify-between py-1 w-full overflow-hidden  opacity-100'>
-    <div className='flex items-center gap-5'>
-      {view === "agenda" && (
-        <span>{format(occurrence.start, "HH:mm")} - {format(occurrence.end, "HH:mm")}</span>
-      )}
-      <div className='flex flex-col'>
-        <span className="font-medium truncate">{appointment!.therapistPerson.person.name}</span>
-        {view !== "month" && (
-          <>
-            <span className="flex items-center gap-1 text-[10px] text-muted-foreground truncate">
-              <MapPin className="size-3 shrink-0" />
-              {appointment!.therapistPerson.clinic}
-            </span>
-          </>
-        )}
-      </div>
-    </div>
-    <Badge className="w-fit text-[10px]" variant={appointment?.status === 'not_started' ? 'secondary' : appointment?.status === 'canceled' ? "destructive" : 'default'}>
-      {statusLabels[appointment!.status].icon}
-      {view !== "month" && view !== "week" && statusLabels[appointment!.status].name}
-    </Badge>
+  const patient = appointment?.therapistPerson.person.name
+  const parts = patient?.split(" ")
+  const firstAndLastName = parts && parts.length > 1 ? parts[0] + " " + parts[parts.length-1] : patient
+
+  return <DropdownMenu >
+      <DropdownMenuTrigger className={cn(
+        'w-full h-full p-1', 
+        appointment!.status === "not_started" ? "bg-accent" : 
+        appointment!.status === "canceled" ? "bg-red-500/20" : "bg-primary/20"
+      )}>
+        <div className='flex flex-row justify-between py-1 w-full overflow-hidden opacity-100'>
+          <div className='flex items-center gap-5'>
+            {view === "agenda" && (
+              <span>{format(occurrence.start, "HH:mm")} - {format(occurrence.end, "HH:mm")}</span>
+            )}
+            <div className='flex flex-col'>
+              <span className="font-medium truncate">{firstAndLastName}</span>
+              {view !== "month" && (
+                <>
+                <span className="flex items-center gap-1 text-[10px] text-muted-foreground truncate">
+                  <MapPin className="size-3 shrink-0" />
+                    {appointment!.therapistPerson.clinic}
+                  </span>
+                </>
+                )}
+            </div>
+          </div>
+        </div>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent>
+        <DropdownMenuGroup>
+          <DropdownMenuItem onClick={() => navigate({to: `/schedule/${appointment?.id}/`})}><Link/>Ver consulta</DropdownMenuItem>
+        </DropdownMenuGroup>
+        <DropdownMenuGroup>
+          <DropdownMenuLabel>Estado</DropdownMenuLabel>
+          <DropdownMenuRadioGroup value={appointment?.status} onValueChange={e => updateStatus(appointment!.id, e)}>
+            <DropdownMenuRadioItem value="not_started">Não iniciada</DropdownMenuRadioItem>
+            <DropdownMenuRadioItem value="finished">Terminada</DropdownMenuRadioItem>
+            <DropdownMenuRadioItem value="canceled">Cancelada</DropdownMenuRadioItem>
+          </DropdownMenuRadioGroup>
+        </DropdownMenuGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
+
       
-  </div>
 }
 
 function parseAppointmentToCalendarEvent(appointment: AppointmentWithPerson): CalendarEvent<AppointmentWithPerson> {
