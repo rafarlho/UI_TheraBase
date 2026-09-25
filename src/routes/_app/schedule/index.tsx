@@ -38,6 +38,7 @@ function RouteComponent() {
 
   const [appointements, setAppointments] = useState<CalendarEvent<AppointmentWithPerson>[]>([])
   const [openCreateDialog, setOpenCreateDialog] = useState(false)
+  const [selectedDates, setSelectedDates] = useState<{startDate: Date, endDate: Date}| null>(null)
 
   const updateAppointementFn = useServerFn(updateAppointment)
   const updateAppointmentStatusFn = useServerFn(updateAppointmentStatus)
@@ -47,8 +48,9 @@ function RouteComponent() {
 
   const navigate = useNavigate()
 
-  useEffect(()=> setAppointments(appointementsLoaded.map(a => parseAppointmentToCalendarEvent(a))),[appointementsLoaded])
 
+  useEffect(()=> setAppointments(appointementsLoaded.map(a => parseAppointmentToCalendarEvent(a))),[appointementsLoaded])
+  useEffect(()=> {if(!openCreateDialog) setSelectedDates(null)},[openCreateDialog])
 
   async function handleEventChange(events:CalendarEvent<AppointmentWithPerson>[]) {
       const changedEvents = events.filter(e => !appointements.find((a) => isEqual(a.start, e.start) && isEqual(a.end, e.end) && a.id === e.id))
@@ -83,7 +85,7 @@ function RouteComponent() {
 
   return (
     <>
-      <CreateDialog open={openCreateDialog} setOpen={setOpenCreateDialog} patientOptions={patientsLoaded} refreshData={getAppointmentsByRange}/>
+      <CreateDialog open={openCreateDialog} setOpen={setOpenCreateDialog} patientOptions={patientsLoaded} refreshData={getAppointmentsByRange} selectedDates={selectedDates} />
       <div className='h-dvh p-5 flex flex-col min-w-0 overflow-hidden gap-3 w-full'>
         <h1 className='font-heading font-bold text-2xl'> Agenda</h1>
         <EventCalendar
@@ -91,6 +93,10 @@ function RouteComponent() {
           todayClassName='font-bold text-foreground! bg-secondary/20!'
           i18n={ptI18n}
           events={appointements}
+          onSelectSlot={(e)=> {
+            setSelectedDates({startDate: e.start, endDate: e.end})
+            setOpenCreateDialog(true)
+          }}
           // onEventClick={(e: any)=> navigate({to: `/schedule/${e.event.id}/`})}
           onEventsChange={handleEventChange}
           onDateChange={getAppointmentsByRange}
@@ -169,7 +175,7 @@ function renderCalendarEvent(occurrence: EventCalendarOccurrence<AppointmentWith
         </DropdownMenuGroup>
         <DropdownMenuGroup>
           <DropdownMenuLabel>Estado</DropdownMenuLabel>
-          <DropdownMenuRadioGroup value={appointment?.status} onValueChange={e => updateStatus(appointment!.id, e)}>
+          <DropdownMenuRadioGroup value={appointment?.status} onValueChange={e => updateStatus(appointment!.id, e as "not_started" | "finished" | "canceled")}>
             <DropdownMenuRadioItem value="not_started">Não iniciada</DropdownMenuRadioItem>
             <DropdownMenuRadioItem value="finished">Terminada</DropdownMenuRadioItem>
             <DropdownMenuRadioItem value="canceled">Cancelada</DropdownMenuRadioItem>

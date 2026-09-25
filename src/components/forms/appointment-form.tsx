@@ -6,7 +6,7 @@ import { Input } from "../ui/input"
 import { Button } from "../ui/button"
 import { Cross, Plus, Save, X } from "lucide-react"
 import { Textarea } from "../ui/textarea"
-import { format } from "date-fns"
+import { differenceInMinutes, format } from "date-fns"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
 import { useState } from "react"
 
@@ -25,17 +25,25 @@ type AppointementFormProps = {
     onSubmit: (values:AppointementFormValues) => void ,
     patientOptions: { id: string; name: string }[],
     isEdit?: boolean
+    selectedDates: {startDate: Date, endDate: Date} | null
     closeDialog:() => void
 }
 
-function AppointmentForm({defaultValues, onSubmit, patientOptions, closeDialog, isEdit = false}: AppointementFormProps) {
+function AppointmentForm({defaultValues, onSubmit, patientOptions, closeDialog, selectedDates, isEdit = false}: AppointementFormProps) {
     if(!defaultValues)
-        defaultValues = {
-            date: new Date(),
-            duration: 45,
-            notes: "",
-            therapistPersonId:""
-        }
+        if(selectedDates) defaultValues = {
+                date: selectedDates.startDate,
+                duration: differenceInMinutes(selectedDates.endDate, selectedDates.startDate),
+                notes: "",
+                therapistPersonId:""
+            }
+        else
+            defaultValues = {
+                date: new Date(),
+                duration: 45,
+                notes: "",
+                therapistPersonId:""
+            }
 
     const form = useForm<AppointementFormValues>({
         resolver: zodResolver(appointmentFormSchema),
