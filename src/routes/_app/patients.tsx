@@ -149,9 +149,8 @@ function RouteComponent() {
 
     function renderTable() {
         return (
-            <div className="min-h-0 flex-1 p-2">
-                <div className='shadow-xl w-full overflow-x-auto'>
-                    <div className='min-w-max'>
+            <div className="min-h-0 flex-1 overflow-auto p-2">
+                    <div className='min-w-max shadow-xl w-full'>
                     <Table className='bg-foreground/5' >
                         <TableHeader>
                             {table.getHeaderGroups().map((headerGroup) =>(
@@ -182,7 +181,6 @@ function RouteComponent() {
                     </Table>
                     </div>
                 </div>
-            </div>
         )
     }
 
