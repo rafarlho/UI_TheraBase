@@ -23,17 +23,13 @@ import { cn } from '#/lib/utils'
 export const Route = createFileRoute('/_app/schedule/')({
   component: RouteComponent,
   loader: async () => {
-      const [appointementsLoaded, patientsLoaded] = await Promise.all([
-        getByTherapistAndDate({data:{startDate: startOfWeek(new Date()), endDate: endOfWeek(new Date())}}),
-        getPatientOptions()
-      ])
-      return {appointementsLoaded, patientsLoaded}
+      return await getPatientOptions() 
   },
   errorComponent: ({ error }) => <>Algo correu mal: {error.message}</>
 })
 
 function RouteComponent() {
-  const {appointementsLoaded, patientsLoaded} = Route.useLoaderData()
+  const patientsLoaded = Route.useLoaderData()
 
   const [appointements, setAppointments] = useState<CalendarEvent<AppointmentWithPerson>[]>([])
   const [openCreateDialog, setOpenCreateDialog] = useState(false)
@@ -49,9 +45,11 @@ function RouteComponent() {
   
   const navigate = useNavigate()
   
-
-  useEffect(()=> setAppointments(appointementsLoaded.map(a => parseAppointmentToCalendarEvent(a))),[appointementsLoaded])
+  
   useEffect(()=> {if(!openCreateDialog) setSelectedDates(null)},[openCreateDialog])
+  useEffect(()=> {
+    if(apiRef.current) void getAppointmentsByRange()
+  },[apiRef])
 
   async function handleEventChange(events:CalendarEvent<AppointmentWithPerson>[]) {
       const changedEvents = events.filter(e => !appointements.find((a) => isEqual(a.start, e.start) && isEqual(a.end, e.end) && a.id === e.id))
@@ -75,6 +73,7 @@ function RouteComponent() {
     else toast.error("Não foi possível atualizar a consulta")
   }
 
+
   async function handleDelete(id:string) {
     const result = await deleteAppointmentFn({data:{id}})
     if(result) {
@@ -86,12 +85,16 @@ function RouteComponent() {
   }
 
   async function getAppointmentsByRange() {
-    const {start, end} = apiRef.current!.getActiveRange()
-    const appointments = await getByTherapistAndDateFn({data:{
-      startDate: new Date(start),
-      endDate: new Date(end),
-    }})
-    setAppointments(appointments.map(a => parseAppointmentToCalendarEvent(a)))
+    const activeRange = apiRef.current?.getActiveRange()
+    if (!activeRange) return
+
+    const fetchedAppointments = await getByTherapistAndDateFn({
+      data: {
+        startDate: new Date(activeRange.start),
+        endDate: new Date(activeRange.end),
+      }
+    })
+    setAppointments(fetchedAppointments.map(parseAppointmentToCalendarEvent))
   }
 
   return (
