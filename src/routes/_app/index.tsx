@@ -113,7 +113,7 @@ function RouteComponent() {
               <li 
                 key={_i} 
                 className="bg-primary/20 p-2 rounded-sm my-1 cursor-pointer flex flex-wrap justify-between gap-2"
-                onClick={()=> navigateToPatient(p.id)}
+                onClick={()=> navigate({to: `/patients/${p.person.id}`})}
               >
                 <p>{p.person.name}</p>
                 <p>{p.entity}</p>

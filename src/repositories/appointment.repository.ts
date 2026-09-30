@@ -77,7 +77,7 @@ export const appointmentRepository = {
             .where(
                 and(
                     eq(therapistPerson.personId, id),
-                    ne(appointment.status,"canceled"),
+                    // ne(appointment.status,"canceled"),
                     eq(therapistPerson.therapistId, therapistId),
                     
                 ),
