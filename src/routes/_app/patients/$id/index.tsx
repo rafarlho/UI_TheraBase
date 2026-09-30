@@ -3,7 +3,7 @@ import PatientForm from '#/components/forms/patient-form'
 import { Badge } from '#/components/ui/badge'
 import { Button } from '#/components/ui/button'
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from '#/components/ui/card'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '#/components/ui/dialog'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '#/components/ui/dialog'
 import type { PersonWithTherapist } from '#/entities/person.entity'
 import { displayAgeByMonths } from '#/helpers/date-helper'
 import { getAllAppointmentsForPatient } from '#/server/functions/appointments'
@@ -149,4 +149,21 @@ function updateDialog(defaultValues:PatientFormValues, handleSubmit: (value:Pati
             </DialogHeader>
         </DialogContent>
     </Dialog>)
+}
+
+function removeDialog({handleRemovePatient, setOpenRemoveDialog}: {handleRemovePatient: () => void, setOpenRemoveDialog: (value:boolean) => void}) {
+    return(
+        <DialogContent showCloseButton={false}>
+            <DialogHeader>
+                <DialogTitle>Remover paciente</DialogTitle>
+                <DialogDescription>
+                    Tens a certeza que pretendes remover o paciente?<br></br> Se confirmares, todas as consultas futuras e passadas vão desaparecer da tua agenda.
+                </DialogDescription>
+                </DialogHeader>
+            <DialogFooter>
+                <Button variant="outline" onClick={() => setOpenRemoveDialog(false)}>Cancelar</Button>
+                <Button variant="destructive" onClick={() => handleRemovePatient()}>Remover</Button>
+            </DialogFooter>
+        </DialogContent>
+    )
 }
