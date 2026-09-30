@@ -1,14 +1,22 @@
+import type { PatientFormValues } from '#/components/forms/patient-form'
+import PatientForm from '#/components/forms/patient-form'
+import { Badge } from '#/components/ui/badge'
 import { Button } from '#/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '#/components/ui/card'
+import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from '#/components/ui/card'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '#/components/ui/dialog'
 import type { PersonWithTherapist } from '#/entities/person.entity'
 import { displayAgeByMonths } from '#/helpers/date-helper'
 import { getAllAppointmentsForPatient } from '#/server/functions/appointments'
-import { getPersonById } from '#/server/functions/persons'
-import { getTherapistPatientsById } from '#/server/functions/therapist-person'
-import { createFileRoute, notFound, useNavigate } from '@tanstack/react-router'
+import { getPersonById, updatePatient } from '#/server/functions/persons'
+import { getTherapistPatientsById, updateTherapistPerson } from '#/server/functions/therapist-person'
+import { statusLabels } from '#/utils/appointment-status'
+import { createFileRoute, notFound, useNavigate, useRouter } from '@tanstack/react-router'
+import { useServerFn } from '@tanstack/react-start'
 import { format } from 'date-fns'
 import { pt } from 'date-fns/locale'
-import { ExternalLink } from 'lucide-react'
+import { ArrowLeft, Edit, ExternalLink } from 'lucide-react'
+import { useState } from 'react'
+import { toast } from 'sonner'
 
 export const Route = createFileRoute('/_app/patients/$id/')({
   component: RouteComponent,
@@ -30,8 +38,49 @@ export const Route = createFileRoute('/_app/patients/$id/')({
 function RouteComponent() {
   const navigate = useNavigate()
   const { patient, appointments} = Route.useLoaderData()
+  const router = useRouter()
+  const [openEditDialog, setOpenEditDialog] = useState(false)
+
+  const updateTherapistPersonFn = useServerFn(updateTherapistPerson)
+  const updatePersonFn = useServerFn(updatePatient)
+
+  async function handleUpdate(values: PatientFormValues) {
+    await updatePersonFn({data: {
+      id: patient.id,
+      birthDate: values.birthDate,
+      name: values.name,
+      phoneNumber: values.phoneNumber
+    }})
+    await updateTherapistPersonFn({data: {
+      therapistPersonId: patient.therapistPerson!.id,
+      clinic: values.clinic,
+      clinicalDiagnosis: values.clinicalDiagnosis,
+      entity: values.entity,
+      process: values.process,
+      therapeuticalDiagnosis: values.therapeuticalDiagnosis
+    }})
+    toast.success("Paciente atualizado com sucesso!")
+    router.invalidate()
+    setOpenEditDialog(false)
+  }
+
   return <main className='p-10 flex flex-col h-dvh overflow-hidden w-full' id="detailed-appointment-page relative">
-    {/* <small className="cursor-pointer flex border max-w-max py-1 rounded-sm  px-2 items-center gap-1" onClick={()=>router.history.back()}><ArrowLeft size={20}/> Voltar</small> */}
+    {openEditDialog &&  updateDialog(
+      {
+        birthDate: new Date(patient.birthDate),
+        clinic: patient.therapistPerson?.clinic ?? "",
+        entity : patient.therapistPerson?.entity?? "",
+        name: patient.name,
+        phoneNumber: patient.phoneNumber ?? "",
+        process: patient.therapistPerson?.process ?? 0,
+        clinicalDiagnosis: patient.therapistPerson?.clinicalDiagnosis ?? "",
+        therapeuticalDiagnosis: patient.therapistPerson?.therapeuticalDiagnosis ?? "",
+      },
+      handleUpdate,
+      openEditDialog,
+      setOpenEditDialog
+    )}
+    <small className="cursor-pointer flex border max-w-max py-1 rounded-sm  px-2 items-center gap-1" onClick={()=>router.history.back()}><ArrowLeft size={20}/> Voltar</small>
     <h1 className='text-2xl mt-5'>Paciente: <b>{patient.name}</b></h1>
     <div className='grid lg:grid-cols-2 gap-10 mt-5 flex-1 min-h-0'> 
       <section id="selected-appointment">
@@ -51,8 +100,9 @@ function RouteComponent() {
               </div>
             </CardDescription>
           </CardHeader>
-          <CardContent className='flex gap-2 items-center'>
-          </CardContent>
+          <CardAction className='px-5'>
+            <Button variant={"outline"} onClick={()=>setOpenEditDialog(true)}><Edit/> Alterar</Button>
+          </CardAction>
           
         </Card>
       </section>
@@ -62,7 +112,13 @@ function RouteComponent() {
           <Card key={a.id} className='gap-1'>
             <CardHeader>
               <CardTitle className='flex justify-between items-center'>
+                <div className='flex flex-col gap-2'>
                   <p>{format(a.date, "HH:mm 'de' EEEE, d 'de' MMMM 'de'  yyyy", {locale: pt}) }</p> 
+                  <Badge className="w-fit" variant={a.status === 'not_started' ? 'secondary' : a.status === 'canceled' ? "destructive" : 'default'}>
+                    {statusLabels[a.status].icon}
+                    {statusLabels[a.status].name}
+                  </Badge>
+                </div>
                 <Button onClick={()=> navigate({to: `/schedule/${a.id}`})}><ExternalLink/></Button>
               </CardTitle>
             </CardHeader>
@@ -75,4 +131,22 @@ function RouteComponent() {
       </section>
     </div>
   </main>
+}
+
+function updateDialog(defaultValues:PatientFormValues, handleSubmit: (value:PatientFormValues) => void, openEditDialog: boolean, setOpenEditDialog: (value:boolean) => void) {
+    
+    return(<Dialog open={openEditDialog}>
+        <DialogContent showCloseButton={false}>
+            <DialogHeader>
+                <DialogTitle>Editar paciente</DialogTitle>
+                <DialogDescription>
+                    <PatientForm
+                        defaultValues={defaultValues}
+                        onSubmit={handleSubmit}
+                        closeDialog={()=> setOpenEditDialog(false)}
+                    />
+                </DialogDescription>
+            </DialogHeader>
+        </DialogContent>
+    </Dialog>)
 }

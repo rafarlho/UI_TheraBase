@@ -3,17 +3,17 @@ import { Badge } from '#/components/ui/badge'
 import { Button } from '#/components/ui/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '#/components/ui/card'
 import { Textarea } from '#/components/ui/textarea'
-import type { AppointmentWithPerson } from '#/entities/appointment.entity'
 import { getAllAppointmentsForPatient, getAppointmentDetails, updateAppointment, updateAppointmentStatus } from '#/server/functions/appointments'
 import { createFileRoute, notFound, useBlocker, useNavigate, useRouter } from '@tanstack/react-router'
 import { useServerFn } from '@tanstack/react-start'
 import { format, isAfter } from 'date-fns'
-import { ArrowLeft, CalendarX2, ClipboardClock, Edit, ExternalLink, Save, SquareCheckBig } from 'lucide-react'
+import { ArrowLeft, Edit, ExternalLink, Save } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { pt } from "date-fns/locale"
 import UpdateDialog from '#/components/schedule/update-dialog'
 import { displayAgeByMonths } from '#/helpers/date-helper'
+import { statusLabels } from '#/utils/appointment-status'
 
 export const Route = createFileRoute('/_app/schedule/$id/')({
   component: RouteComponent,
@@ -61,8 +61,8 @@ function RouteComponent() {
     router.invalidate()
   }
 
-  async function updateStatus(status: "finished"|"canceled"|"not_started") {
-    await updateAppointmentStatusFn({data:{id: appointment.id, status}})
+  async function updateStatus(appointmentStatus:  "finished"|"canceled"|"not_started") {
+    await updateAppointmentStatusFn({data:{id: appointment.id, status:appointmentStatus}})
     toast.success("Estado da sessão atualizado com sucesso")
     router.invalidate()
   }
@@ -160,9 +160,3 @@ function RouteComponent() {
     </div>
   </main>
 }
-
-const statusLabels: Record<AppointmentWithPerson["status"], {name: string, icon:React.ReactElement}> = {
-    not_started:{name: 'Por iniciar', icon:<ClipboardClock /> },
-    canceled: {name: 'Cancelada', icon:<CalendarX2/> },
-    finished: {name: 'Terminada', icon:<SquareCheckBig/> },
-  }

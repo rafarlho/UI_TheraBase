@@ -1,13 +1,14 @@
 import { Badge } from '#/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
-import type { AppointmentWithPerson } from '#/entities/appointment.entity'
+import { displayAgeByMonths } from '#/helpers/date-helper'
 import { getAllAppointmentsForPatient, getByTherapistAndDate } from '#/server/functions/appointments'
 import { getCurrentSession } from '#/server/functions/auth'
+import { statusLabels } from '#/utils/appointment-status'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useServerFn } from '@tanstack/react-start'
-import { differenceInMonths, endOfWeek, format, isAfter, isBefore, isSameDay, startOfWeek } from 'date-fns'
+import { endOfWeek, format, isAfter, isBefore, isSameDay, startOfWeek } from 'date-fns'
 import { pt } from "date-fns/locale"
-import { Calendar, CalendarX, CalendarX2, CheckSquareIcon, ClipboardClock, Clock, SquareCheckBig } from 'lucide-react'
+import { Calendar, CalendarX, CheckSquareIcon, Clock } from 'lucide-react'
 import { toast } from 'sonner'
 
 export const Route = createFileRoute('/_app/')({
@@ -116,7 +117,7 @@ function RouteComponent() {
               >
                 <p>{p.person.name}</p>
                 <p>{p.entity}</p>
-                <p>{displayAge(differenceInMonths(new Date(), new Date(p.person.birthDate)))}</p>
+                <p>{displayAgeByMonths(p.person.birthDate)}</p>
               </li>
             ))}
           </ul>
@@ -126,16 +127,3 @@ function RouteComponent() {
 
   </main>
 }
-
-function displayAge(months: number) {
-  if(months < 12) return months + " meses"
-  const years = Math.floor(months/12)
-  if(years === 1) return "1 ano"
-  return years + " anos"
-}
-
-const statusLabels: Record<AppointmentWithPerson["status"], {name: string, icon:React.ReactElement}> = {
-    not_started:{name: 'Por iniciar', icon:<ClipboardClock/> },
-    canceled: {name: 'Cancelada', icon:<CalendarX2/> },
-    finished: {name: 'Terminada', icon:<SquareCheckBig/> },
-  }

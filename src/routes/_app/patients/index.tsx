@@ -58,53 +58,28 @@ function RouteComponent() {
 
     const columns = useMemo(()=>[
         columnHelper.accessor("name",{
-            header: "Nome",
-            cell: cell => <EditableCell 
-            value={cell.getValue()}
-            onSave={newValue => updatePatientFn({data: {id: cell.row.original.id, name: newValue}})}
-            />
+            header: "Nome",           
         },),
         columnHelper.accessor("birthDate",{
             header: "Data de Nascimento",
-            cell: cell => <EditableCell 
-            value={format(cell.getValue(), "dd-MM-yyyy")}
-            onSave={newValue => updatePatientFn({data: {id: cell.row.original.id, birthDate: format(new Date(newValue), "yyyy-MM-dd")}})}
-            />
+        },),
+        columnHelper.accessor("phoneNumber",{
+            header: "Contacto",
         },),
         columnHelper.accessor("therapistPerson.clinic",{
             header: "Clinica",
-            cell: cell => <EditableCell 
-            value={cell.getValue()}
-            onSave={newValue => updateTherapistPersonFn({data: {therapistPersonId: cell.row.original.therapistPerson!.id, clinic: newValue}})}
-            />
         },),
         columnHelper.accessor("therapistPerson.process",{
             header: "Processo",
-            cell: cell => <EditableCell 
-            value={cell.getValue()+""}
-            onSave={newValue => updateTherapistPersonFn({data: {therapistPersonId: cell.row.original.therapistPerson!.id, process: +newValue}})}
-            />
         },),
         columnHelper.accessor("therapistPerson.entity",{
             header: "Entidade",
-            cell: cell => <EditableCell 
-            value={cell.getValue()}
-            onSave={newValue => updateTherapistPersonFn({data: {therapistPersonId: cell.row.original.therapistPerson!.id, entity: newValue}})}
-            />
         },),
         columnHelper.accessor("therapistPerson.therapeuticalDiagnosis",{
             header: "Diag. Terapêutico",
-            cell: cell => <EditableCell 
-            value={cell.getValue() ?? ""}
-            onSave={newValue => updateTherapistPersonFn({data: {therapistPersonId: cell.row.original.therapistPerson!.id, therapeuticalDiagnosis: newValue}})}
-            />
         },),
         columnHelper.accessor("therapistPerson.clinicalDiagnosis",{
             header: "Diag. Clínico",
-            cell: cell => <EditableCell 
-            value={cell.getValue() ?? ""}
-            onSave={newValue => updateTherapistPersonFn({data: {therapistPersonId: cell.row.original.therapistPerson!.id, clinicalDiagnosis: newValue}})}
-            />
         },),
         columnHelper.accessor("id",{header: "", cell: (cell) => <div className='flex w-full justify-end gap-3'>
                     <Button variant={'destructive'} onClick={()=> {setSelectedPatientToRemove(cell.getValue()); setOpenRemoveDialog(true)}}><Trash/></Button>
