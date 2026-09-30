@@ -7,13 +7,13 @@ import type { AppointmentWithPerson } from '#/entities/appointment.entity'
 import { getAllAppointmentsForPatient, getAppointmentDetails, updateAppointment, updateAppointmentStatus } from '#/server/functions/appointments'
 import { createFileRoute, notFound, useBlocker, useNavigate, useRouter } from '@tanstack/react-router'
 import { useServerFn } from '@tanstack/react-start'
-import { differenceInMonths, format, isAfter } from 'date-fns'
+import { format, isAfter } from 'date-fns'
 import { ArrowLeft, CalendarX2, ClipboardClock, Edit, ExternalLink, Save, SquareCheckBig } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { pt } from "date-fns/locale"
 import UpdateDialog from '#/components/schedule/update-dialog'
-import { displayAgeByMonths } from '#/helpers/date-helps'
+import { displayAgeByMonths } from '#/helpers/date-helper'
 
 export const Route = createFileRoute('/_app/schedule/$id/')({
   component: RouteComponent,

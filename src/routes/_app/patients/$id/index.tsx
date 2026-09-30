@@ -1,7 +1,7 @@
 import { Button } from '#/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '#/components/ui/card'
 import type { PersonWithTherapist } from '#/entities/person.entity'
-import { displayAgeByMonths } from '#/helpers/date-helps'
+import { displayAgeByMonths } from '#/helpers/date-helper'
 import { getAllAppointmentsForPatient } from '#/server/functions/appointments'
 import { getPersonById } from '#/server/functions/persons'
 import { getTherapistPatientsById } from '#/server/functions/therapist-person'
