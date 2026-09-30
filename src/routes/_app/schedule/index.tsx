@@ -109,7 +109,6 @@ function RouteComponent() {
             setSelectedDates({startDate: e.start, endDate: e.end})
             setOpenCreateDialog(true)
           }}
-          // onEventClick={(e: any)=> navigate({to: `/schedule/${e.event.id}/`})}
           onEventsChange={handleEventChange}
           onDateChange={getAppointmentsByRange}
           onViewChange={getAppointmentsByRange}
@@ -165,9 +164,9 @@ function renderCalendarEvent(
 
   return <DropdownMenu >
       <DropdownMenuTrigger className={cn(
-        'w-full h-full p-1', 
-        appointment!.status === "not_started" ? "bg-accent" : 
-        appointment!.status === "canceled" ? "bg-red-500/20" : "bg-primary/20"
+        'w-full h-full p-1 border rounded-md', 
+        appointment!.status === "not_started" ? "bg-accent border-secondary-foreground" : 
+        appointment!.status === "canceled" ? "bg-red-500/20 border-red-500" : "bg-primary/20 border-primary"
       )}>
         <div className='flex flex-row justify-between py-1 w-full overflow-hidden opacity-100'>
           <div className='flex items-center gap-5'>
