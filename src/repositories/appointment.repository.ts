@@ -30,6 +30,7 @@ export const appointmentRepository = {
             .where(and(
                 and(
                     eq(therapistPerson.therapistId, therapistId),
+                    eq(therapistPerson.active, true),
                     gte(appointment.date, startOfDay(startDate)),
                     lte(appointment.date, endOfDay(endDate)),
                 ),

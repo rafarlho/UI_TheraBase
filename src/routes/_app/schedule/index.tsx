@@ -27,7 +27,6 @@ export const Route = createFileRoute('/_app/schedule/')({
         getByTherapistAndDate({data:{startDate: startOfWeek(new Date()), endDate: endOfWeek(new Date())}}),
         getPatientOptions()
       ])
-      console.log(appointementsLoaded, patientsLoaded)
       return {appointementsLoaded, patientsLoaded}
   },
   errorComponent: ({ error }) => <>Algo correu mal: {error.message}</>
@@ -110,8 +109,8 @@ function RouteComponent() {
             setOpenCreateDialog(true)
           }}
           onEventsChange={handleEventChange}
-          onDateChange={async (date) =>{console.log(date);localStorage.setItem("date", date.toISOString()) ; await getAppointmentsByRange()}}
-          onViewChange={async (view) =>{console.log(view);localStorage.setItem("view", view) ; await getAppointmentsByRange()}}
+          onDateChange={async (date) =>{localStorage.setItem("date", date.toISOString()) ; await getAppointmentsByRange()}}
+          onViewChange={async (view) =>{localStorage.setItem("view", view) ; await getAppointmentsByRange()}}
           renderAgendaEvent={props => renderCalendarEvent(props.occurrence, "agenda", navigate, updateStatus, handleDelete)}
           apiRef={apiRef}
           scrollToHour={(new Date()).getHours()}

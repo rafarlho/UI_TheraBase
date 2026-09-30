@@ -8,13 +8,13 @@ import type { PersonWithTherapist } from '#/entities/person.entity'
 import { displayAgeByMonths } from '#/helpers/date-helper'
 import { getAllAppointmentsForPatient } from '#/server/functions/appointments'
 import { getPersonById, updatePatient } from '#/server/functions/persons'
-import { getTherapistPatientsById, updateTherapistPerson } from '#/server/functions/therapist-person'
+import { getTherapistPatientsById, removePatientFromTherapist, updateTherapistPerson } from '#/server/functions/therapist-person'
 import { statusLabels } from '#/utils/appointment-status'
 import { createFileRoute, notFound, useNavigate, useRouter } from '@tanstack/react-router'
 import { useServerFn } from '@tanstack/react-start'
 import { format } from 'date-fns'
 import { pt } from 'date-fns/locale'
-import { ArrowLeft, Edit, ExternalLink } from 'lucide-react'
+import { ArrowLeft, Edit, ExternalLink, Trash } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
@@ -39,10 +39,14 @@ function RouteComponent() {
   const navigate = useNavigate()
   const { patient, appointments} = Route.useLoaderData()
   const router = useRouter()
+  
   const [openEditDialog, setOpenEditDialog] = useState(false)
+  const [openRemoveDialog, setOpenRemoveDialog] = useState(false)
+
 
   const updateTherapistPersonFn = useServerFn(updateTherapistPerson)
   const updatePersonFn = useServerFn(updatePatient)
+  const removePatientFromTherapistFn = useServerFn(removePatientFromTherapist)
 
   async function handleUpdate(values: PatientFormValues) {
     await updatePersonFn({data: {
@@ -64,6 +68,13 @@ function RouteComponent() {
     setOpenEditDialog(false)
   }
 
+  async function handleRemovePatient() {
+      await removePatientFromTherapistFn({data:{personId:patient.id}})
+      setOpenRemoveDialog(false)
+      router.history.back()
+      toast.success(`O paciente foi removido com sucesso`)
+  }
+
   return <main className='p-10 flex flex-col h-dvh overflow-hidden w-full' id="detailed-appointment-page relative">
     {openEditDialog &&  updateDialog(
       {
@@ -80,6 +91,9 @@ function RouteComponent() {
       openEditDialog,
       setOpenEditDialog
     )}
+    <Dialog open={openRemoveDialog}>
+        {removeDialog({handleRemovePatient, setOpenRemoveDialog})}
+    </Dialog>
     <small className="cursor-pointer flex border max-w-max py-1 rounded-sm  px-2 items-center gap-1" onClick={()=>router.history.back()}><ArrowLeft size={20}/> Voltar</small>
     <h1 className='text-2xl mt-5'>Paciente: <b>{patient.name}</b></h1>
     <div className='grid lg:grid-cols-2 gap-10 mt-5 flex-1 min-h-0'> 
@@ -100,8 +114,9 @@ function RouteComponent() {
               </div>
             </CardDescription>
           </CardHeader>
-          <CardAction className='px-5'>
+          <CardAction className='px-5 flex justify-between w-full'>
             <Button variant={"outline"} onClick={()=>setOpenEditDialog(true)}><Edit/> Alterar</Button>
+            <Button variant={'destructive'} onClick={()=> {setOpenRemoveDialog(true)}}><Trash/>Remover</Button>
           </CardAction>
           
         </Card>
