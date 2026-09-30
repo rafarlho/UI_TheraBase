@@ -1,15 +1,13 @@
 import { Badge } from '#/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
 import { displayAgeByMonths } from '#/helpers/date-helper'
-import { getAllAppointmentsForPatient, getByTherapistAndDate } from '#/server/functions/appointments'
+import { getByTherapistAndDate } from '#/server/functions/appointments'
 import { getCurrentSession } from '#/server/functions/auth'
 import { statusLabels } from '#/utils/appointment-status'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { useServerFn } from '@tanstack/react-start'
-import { endOfWeek, format, isAfter, isBefore, isSameDay, startOfWeek } from 'date-fns'
+import { endOfWeek, format,isSameDay, startOfWeek } from 'date-fns'
 import { pt } from "date-fns/locale"
 import { Calendar, CalendarX, CheckSquareIcon, Clock } from 'lucide-react'
-import { toast } from 'sonner'
 
 export const Route = createFileRoute('/_app/')({
   component: RouteComponent,
@@ -31,7 +29,6 @@ function RouteComponent() {
   })
   const weeksPatients = Array.from(weeksPatientsMap.values())
 
-  const getAllAppointmentsForPatientFn = useServerFn(getAllAppointmentsForPatient)
 
   const navigate = useNavigate()
 
@@ -58,15 +55,6 @@ function RouteComponent() {
       value: weekAppointments.filter(a=> a.status === "canceled").length
     },
   ]
-
-  async function navigateToPatient(id: string) {
-    const allAppointment = await getAllAppointmentsForPatientFn({data:{id}})
-    const finishedAppointments = allAppointment.filter(a => a.status === "finished" && isBefore(a.date, new Date()))
-    const toAttendAppointments = allAppointment.filter(a => a.status === "not_started" && isAfter(a.date, new Date()))
-    if(finishedAppointments.length) navigate({to: `/schedule/${finishedAppointments[finishedAppointments.length-1].id}` })
-    else if(toAttendAppointments.length) navigate({to: `/schedule/${toAttendAppointments[toAttendAppointments.length-1].id}` })
-    else toast.info("Não existem consultas para o paciente selecionado")
-  }
 
   return <main className="h-dvh w-full p-10 flex flex-col ">
     <h1 className='font-heading text-3xl font-bold'>Olá, {session?.name.split(" ")[0]}!</h1>

@@ -2,7 +2,7 @@ import { EventCalendar } from '#/components/reui/event-calendar/event-calendar'
 import type{ EventCalendarApi } from '#/components/reui/event-calendar/event-calendar'
 import { EventCalendarContent } from '#/components/reui/event-calendar/event-calendar-content'
 import { EventCalendarDatePicker, EventCalendarNav, EventCalendarToolbar } from '#/components/reui/event-calendar/event-calendar-nav'
-import type { CalendarEvent, CalendarView, EventCalendarOccurrence } from '#/components/reui/event-calendar/event-calendar-types'
+import type { CalendarEvent, EventCalendarOccurrence } from '#/components/reui/event-calendar/event-calendar-types'
 import CreateDialog from '#/components/schedule/create-dialog'
 import { Button } from '#/components/ui/button'
 import type { AppointmentWithPerson } from '#/entities/appointment.entity'
@@ -12,7 +12,7 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import type { UseNavigateResult } from '@tanstack/react-router'
 import { useServerFn } from '@tanstack/react-start'
 import { addMinutes, differenceInMinutes, endOfWeek, format, isEqual, startOfWeek } from 'date-fns'
-import { Delete, Link, MapPin, PlusIcon, Trash } from 'lucide-react'
+import { Link, MapPin, PlusIcon, Trash } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { pt } from "date-fns/locale"
 import { ptI18n } from '#/utils/calendar-portuguese'
@@ -46,7 +46,7 @@ function RouteComponent() {
 
   
   const apiRef = useRef<EventCalendarApi<AppointmentWithPerson> | null>(null)
-  apiRef.current?.setDayCount(6)
+  
   const navigate = useNavigate()
   
 
@@ -109,8 +109,8 @@ function RouteComponent() {
             setOpenCreateDialog(true)
           }}
           onEventsChange={handleEventChange}
-          onDateChange={async (date) =>{localStorage.setItem("date", date.toISOString()) ; await getAppointmentsByRange()}}
-          onViewChange={async (view) =>{localStorage.setItem("view", view) ; await getAppointmentsByRange()}}
+          onDateChange={getAppointmentsByRange}
+          onViewChange={getAppointmentsByRange}
           renderAgendaEvent={props => renderCalendarEvent(props.occurrence, "agenda", navigate, updateStatus, handleDelete)}
           apiRef={apiRef}
           scrollToHour={(new Date()).getHours()}
@@ -124,9 +124,7 @@ function RouteComponent() {
           }}
           dayStartHour={8}
           dayEndHour={20}
-          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-          defaultView={localStorage.getItem("view") as CalendarView || "week"}
-          date={localStorage.getItem("date") ? new Date(localStorage.getItem("date")!) : new Date()}
+          defaultView="week"
           className="h-full w-full"
           renderEvent={(props) => renderCalendarEvent(props.occurrence, props.view, navigate, updateStatus, handleDelete)}
         >
