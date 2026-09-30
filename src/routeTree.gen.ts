@@ -17,9 +17,10 @@ import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as AppIndexRouteImport } from './routes/_app/index'
-import { Route as AppPatientsRouteImport } from './routes/_app/patients'
+import { Route as AppPatientsIndexRouteImport } from './routes/_app/patients/index'
 import { Route as AppScheduleIndexRouteImport } from './routes/_app/schedule/index'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as AppPatientsIdIndexRouteImport } from './routes/_app/patients/$id/index'
 import { Route as AppScheduleIdIndexRouteImport } from './routes/_app/schedule/$id/index'
 
 const AppRoute = AppRouteImport.update({
@@ -61,9 +62,9 @@ const AppIndexRoute = AppIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AppRoute,
 } as any)
-const AppPatientsRoute = AppPatientsRouteImport.update({
-  id: '/patients',
-  path: '/patients',
+const AppPatientsIndexRoute = AppPatientsIndexRouteImport.update({
+  id: '/patients/',
+  path: '/patients/',
   getParentRoute: () => AppRoute,
 } as any)
 const AppScheduleIndexRoute = AppScheduleIndexRouteImport.update({
@@ -75,6 +76,11 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AppPatientsIdIndexRoute = AppPatientsIdIndexRouteImport.update({
+  id: '/patients/$id/',
+  path: '/patients/$id/',
+  getParentRoute: () => AppRoute,
 } as any)
 const AppScheduleIdIndexRoute = AppScheduleIdIndexRouteImport.update({
   id: '/schedule/$id/',
@@ -90,9 +96,10 @@ export interface FileRoutesByFullPath {
   '/privacy': typeof PrivacyRoute
   '/register': typeof RegisterRoute
   '/terms': typeof TermsRoute
-  '/patients': typeof AppPatientsRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/patients/': typeof AppPatientsIndexRoute
   '/schedule/': typeof AppScheduleIndexRoute
+  '/patients/$id/': typeof AppPatientsIdIndexRoute
   '/schedule/$id/': typeof AppScheduleIdIndexRoute
 }
 export interface FileRoutesByTo {
@@ -102,10 +109,11 @@ export interface FileRoutesByTo {
   '/privacy': typeof PrivacyRoute
   '/register': typeof RegisterRoute
   '/terms': typeof TermsRoute
-  '/patients': typeof AppPatientsRoute
   '/': typeof AppIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/patients': typeof AppPatientsIndexRoute
   '/schedule': typeof AppScheduleIndexRoute
+  '/patients/$id': typeof AppPatientsIdIndexRoute
   '/schedule/$id': typeof AppScheduleIdIndexRoute
 }
 export interface FileRoutesById {
@@ -117,10 +125,11 @@ export interface FileRoutesById {
   '/privacy': typeof PrivacyRoute
   '/register': typeof RegisterRoute
   '/terms': typeof TermsRoute
-  '/_app/patients': typeof AppPatientsRoute
   '/_app/': typeof AppIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/_app/patients/': typeof AppPatientsIndexRoute
   '/_app/schedule/': typeof AppScheduleIndexRoute
+  '/_app/patients/$id/': typeof AppPatientsIdIndexRoute
   '/_app/schedule/$id/': typeof AppScheduleIdIndexRoute
 }
 export interface FileRouteTypes {
@@ -133,9 +142,10 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/register'
     | '/terms'
-    | '/patients'
     | '/api/auth/$'
+    | '/patients/'
     | '/schedule/'
+    | '/patients/$id/'
     | '/schedule/$id/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -145,10 +155,11 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/register'
     | '/terms'
-    | '/patients'
     | '/'
     | '/api/auth/$'
+    | '/patients'
     | '/schedule'
+    | '/patients/$id'
     | '/schedule/$id'
   id:
     | '__root__'
@@ -159,10 +170,11 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/register'
     | '/terms'
-    | '/_app/patients'
     | '/_app/'
     | '/api/auth/$'
+    | '/_app/patients/'
     | '/_app/schedule/'
+    | '/_app/patients/$id/'
     | '/_app/schedule/$id/'
   fileRoutesById: FileRoutesById
 }
@@ -235,11 +247,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppIndexRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/patients': {
-      id: '/_app/patients'
+    '/_app/patients/': {
+      id: '/_app/patients/'
       path: '/patients'
-      fullPath: '/patients'
-      preLoaderRoute: typeof AppPatientsRouteImport
+      fullPath: '/patients/'
+      preLoaderRoute: typeof AppPatientsIndexRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/schedule/': {
@@ -256,6 +268,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_app/patients/$id/': {
+      id: '/_app/patients/$id/'
+      path: '/patients/$id'
+      fullPath: '/patients/$id/'
+      preLoaderRoute: typeof AppPatientsIdIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/schedule/$id/': {
       id: '/_app/schedule/$id/'
       path: '/schedule/$id'
@@ -267,16 +286,18 @@ declare module '@tanstack/react-router' {
 }
 
 interface AppRouteChildren {
-  AppPatientsRoute: typeof AppPatientsRoute
   AppIndexRoute: typeof AppIndexRoute
+  AppPatientsIndexRoute: typeof AppPatientsIndexRoute
   AppScheduleIndexRoute: typeof AppScheduleIndexRoute
+  AppPatientsIdIndexRoute: typeof AppPatientsIdIndexRoute
   AppScheduleIdIndexRoute: typeof AppScheduleIdIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
-  AppPatientsRoute: AppPatientsRoute,
   AppIndexRoute: AppIndexRoute,
+  AppPatientsIndexRoute: AppPatientsIndexRoute,
   AppScheduleIndexRoute: AppScheduleIndexRoute,
+  AppPatientsIdIndexRoute: AppPatientsIdIndexRoute,
   AppScheduleIdIndexRoute: AppScheduleIdIndexRoute,
 }
 

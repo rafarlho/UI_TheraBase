@@ -13,6 +13,7 @@ import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { pt } from "date-fns/locale"
 import UpdateDialog from '#/components/schedule/update-dialog'
+import { displayAgeByMonths } from '#/helpers/date-helps'
 
 export const Route = createFileRoute('/_app/schedule/$id/')({
   component: RouteComponent,
@@ -94,7 +95,7 @@ function RouteComponent() {
                 <p>Localização: <b>{appointment.therapistPerson.clinic}</b></p>
                 <p>Processo: <b>{appointment.therapistPerson.process}</b></p>
                 <p>Entidade: <b>{appointment.therapistPerson.entity}</b></p>
-                <p>Idade: <b>{displayAge(differenceInMonths(new Date(), new Date(appointment.therapistPerson.person.birthDate)))}</b></p>
+                <p>Idade: <b>{displayAgeByMonths(appointment.therapistPerson.person.birthDate)}</b></p>
                 <p>Diagonóstico Clínico Terapêutico: <b>{appointment.therapistPerson.therapeuticalDiagnosis || "Não definido"}</b></p>
                 <p>Diagonóstico Clínico: <b>{appointment.therapistPerson.clinicalDiagnosis || "Não definido"}</b></p>
               </div>
@@ -158,14 +159,6 @@ function RouteComponent() {
       </section>
     </div>
   </main>
-}
-
-
-function displayAge(months: number) {
-  if(months < 12) return months + " meses"
-  const years = Math.floor(months/12)
-  if(years === 1) return "1 ano"
-  return years + " anos"
 }
 
 const statusLabels: Record<AppointmentWithPerson["status"], {name: string, icon:React.ReactElement}> = {

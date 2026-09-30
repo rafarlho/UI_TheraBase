@@ -13,16 +13,15 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { addPatientToTherapistByNameAndBirthDate } from '#/services/patients'
 import { removePatientFromTherapist, updateTherapistPerson } from '#/server/functions/therapist-person'
 import { toast } from 'sonner'
-import { getAllAppointmentsForPatient } from '#/server/functions/appointments'
-import { format, isAfter, isBefore } from 'date-fns'
+import { format } from 'date-fns'
 import PatientForm from '#/components/forms/patient-form'
 import type {  PatientFormValues } from '#/components/forms/patient-form'
 
-export const Route = createFileRoute('/_app/patients')({
-    component: RouteComponent,
-    loader: async () => {
-        return getTherapistPatients()
-    }
+export const Route = createFileRoute('/_app/patients/')({
+  component: RouteComponent,
+  loader: async () => {
+          return getTherapistPatients()
+      }
 })
 
 const columnHelper = createColumnHelper<PersonWithTherapist>()
@@ -56,16 +55,6 @@ function RouteComponent() {
         return () => clearTimeout(timeout)
     },[search])
 
-    const getAllAppointmentsForPatientFn = useServerFn(getAllAppointmentsForPatient)
-
-    async function navigateToPatient(id: string) {
-        const allAppointment = await getAllAppointmentsForPatientFn({data:{id}})
-        const finishedAppointments = allAppointment.filter(a => a.status === "finished" && isBefore(a.date, new Date()))
-        const toAttendAppointments = allAppointment.filter(a => a.status === "not_started" && isAfter(a.date, new Date()))
-        if(finishedAppointments.length) navigate({to: `/schedule/${finishedAppointments[finishedAppointments.length-1].id}` })
-        else if(toAttendAppointments.length) navigate({to: `/schedule/${toAttendAppointments[toAttendAppointments.length-1].id}` })
-        else toast.info("Não existem consultas para o paciente selecionado")
-    }
 
     const columns = useMemo(()=>[
         columnHelper.accessor("name",{
@@ -119,7 +108,7 @@ function RouteComponent() {
         },),
         columnHelper.accessor("id",{header: "", cell: (cell) => <div className='flex w-full justify-end gap-3'>
                     <Button variant={'destructive'} onClick={()=> {setSelectedPatientToRemove(cell.getValue()); setOpenRemoveDialog(true)}}><Trash/></Button>
-                    <Button onClick={()=> navigateToPatient(cell.getValue())}><ExternalLink/></Button>
+                    <Button onClick={()=> navigate({to: `/patients/${cell.getValue()}` })}><ExternalLink/></Button>
                 </div>
                 }),
 

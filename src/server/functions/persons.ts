@@ -5,6 +5,13 @@ import { requireTherapist } from "../auth";
 import { format } from "date-fns";
 import { therapistPersonRepository } from "#/repositories/therapist-person.repository";
 
+export const getPersonById = createServerFn({method: "GET"})
+    .validator(z.object({id: z.uuid()}))
+    .handler(async ({data}) => {
+        await requireTherapist()
+        return personRepository.findById(data.id)
+    })
+
 export const getTherapistPatients = createServerFn({method: "GET"})
     .handler(async () => {
         const therapist = await requireTherapist()
