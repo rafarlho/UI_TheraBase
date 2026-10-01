@@ -2,7 +2,7 @@ import { EventCalendar } from '#/components/reui/event-calendar/event-calendar'
 import type{ EventCalendarApi } from '#/components/reui/event-calendar/event-calendar'
 import { EventCalendarContent } from '#/components/reui/event-calendar/event-calendar-content'
 import { EventCalendarDatePicker, EventCalendarNav, EventCalendarToolbar } from '#/components/reui/event-calendar/event-calendar-nav'
-import type { CalendarEvent, EventCalendarOccurrence } from '#/components/reui/event-calendar/event-calendar-types'
+import type { CalendarEvent, CalendarView, EventCalendarOccurrence } from '#/components/reui/event-calendar/event-calendar-types'
 import CreateDialog from '#/components/schedule/create-dialog'
 import { Button } from '#/components/ui/button'
 import type { AppointmentWithPerson } from '#/entities/appointment.entity'
@@ -34,6 +34,7 @@ function RouteComponent() {
   const [appointements, setAppointments] = useState<CalendarEvent<AppointmentWithPerson>[]>([])
   const [openCreateDialog, setOpenCreateDialog] = useState(false)
   const [selectedDates, setSelectedDates] = useState<{startDate: Date, endDate: Date}| null>(null)
+  const [initial, setInitial] = useState<{ view: CalendarView; date: Date } | null>(null)
 
   const updateAppointementFn = useServerFn(updateAppointment)
   const updateAppointmentStatusFn = useServerFn(updateAppointmentStatus)
@@ -47,6 +48,16 @@ function RouteComponent() {
   
   
   useEffect(()=> {if(!openCreateDialog) setSelectedDates(null)},[openCreateDialog])
+    useEffect(()=> {
+      setInitial({
+      date: localStorage.getItem("date") ? new Date(localStorage.getItem("date")!): new Date(),
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      view: localStorage.getItem("view") as CalendarView ?? "week"
+    })
+  },[])
+  useEffect(()=> {
+    if(apiRef.current) apiRef.current.setDayCount(6)
+  },[apiRef])
 
 
   async function handleEventChange(events:CalendarEvent<AppointmentWithPerson>[]) {
@@ -102,6 +113,7 @@ function RouteComponent() {
     if (api) await fetchRange(api.getVisibleRange())
   }
 
+  if (!initial) return null
   return (
     <>
       <CreateDialog open={openCreateDialog} setOpen={setOpenCreateDialog} patientOptions={patientsLoaded} refreshData={refresh} selectedDates={selectedDates} />
@@ -133,7 +145,10 @@ function RouteComponent() {
           }}
           dayStartHour={8}
           dayEndHour={20}
-          defaultView="week"
+          defaultView={initial.view}
+          defaultDate={initial.date}
+          onViewChange={(view) => localStorage.setItem("view", view)}
+          onDateChange={(date) => localStorage.setItem("date", date.toISOString())}
           className="h-full w-full"
           renderEvent={(props) => renderCalendarEvent(props.occurrence, props.view, navigate, updateStatus, handleDelete)}
         >
