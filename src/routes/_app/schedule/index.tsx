@@ -11,7 +11,7 @@ import { getPatientOptions } from '#/server/functions/persons'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import type { UseNavigateResult } from '@tanstack/react-router'
 import { useServerFn } from '@tanstack/react-start'
-import { addMinutes, differenceInMinutes, endOfWeek, format, isEqual, startOfWeek } from 'date-fns'
+import { addMinutes, differenceInMinutes, format, isEqual } from 'date-fns'
 import { Link, MapPin, PlusIcon, Trash } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { pt } from "date-fns/locale"
@@ -47,26 +47,24 @@ function RouteComponent() {
   
   
   useEffect(()=> {if(!openCreateDialog) setSelectedDates(null)},[openCreateDialog])
-  useEffect(()=> {
-    if(apiRef.current) void getAppointmentsByRange()
-  },[apiRef])
+
 
   async function handleEventChange(events:CalendarEvent<AppointmentWithPerson>[]) {
       const changedEvents = events.filter(e => !appointements.find((a) => isEqual(a.start, e.start) && isEqual(a.end, e.end) && a.id === e.id))
-      changedEvents.map(async e => {
-        await updateAppointementFn({data:{
+      await Promise.all(changedEvents.map(e => {
+        updateAppointementFn({data:{
           id: e.id,
           date: new Date(e.start),
           duration: differenceInMinutes(e.end, e.start)
         }})
-      })
-      await getAppointmentsByRange()
+      }))
+      await refresh()
     }
 
   async function updateStatus(id: string, status: "not_started" | "finished" | "canceled") {
     const result = await updateAppointmentStatusFn({data:{id, status}})
     if(result) {
-      await getAppointmentsByRange()
+      await refresh()
       toast.success("Consulta atualizada com sucesso!")
       
     }
@@ -77,29 +75,36 @@ function RouteComponent() {
   async function handleDelete(id:string) {
     const result = await deleteAppointmentFn({data:{id}})
     if(result) {
-      await getAppointmentsByRange()
+      await refresh()
       toast.success("Consulta eliminada com sucesso!")
       
     }
     else toast.error("Não foi possível eliminar a consulta")
   }
 
-  async function getAppointmentsByRange() {
-    const activeRange = apiRef.current?.getActiveRange()
-    if (!activeRange) return
+  const requestId = useRef(0)
 
-    const fetchedAppointments = await getByTherapistAndDateFn({
-      data: {
-        startDate: new Date(activeRange.start),
-        endDate: new Date(activeRange.end),
-      }
-    })
-    setAppointments(fetchedAppointments.map(parseAppointmentToCalendarEvent))
+  async function fetchRange(range: {start:Date, end:Date}) {
+    const id = ++requestId.current
+    try {
+      const result = await getByTherapistAndDateFn({
+        data: { startDate: new Date(range.start), endDate: new Date(range.end) },
+      })
+      if (id !== requestId.current) return
+      setAppointments(result.map(parseAppointmentToCalendarEvent))
+    } catch {
+      if (id === requestId.current) toast.error("Não foi possível carregar a agenda")
+    }
+  }
+
+  async function refresh() {
+    const api = apiRef.current
+    if (api) await fetchRange(api.getVisibleRange())
   }
 
   return (
     <>
-      <CreateDialog open={openCreateDialog} setOpen={setOpenCreateDialog} patientOptions={patientsLoaded} refreshData={getAppointmentsByRange} selectedDates={selectedDates} />
+      <CreateDialog open={openCreateDialog} setOpen={setOpenCreateDialog} patientOptions={patientsLoaded} refreshData={refresh} selectedDates={selectedDates} />
       <div className='h-dvh p-5 flex flex-col min-w-0 overflow-hidden gap-3 w-full'>
         <h1 className='font-heading font-bold text-2xl'> Agenda</h1>
         <EventCalendar
@@ -112,8 +117,9 @@ function RouteComponent() {
             setOpenCreateDialog(true)
           }}
           onEventsChange={handleEventChange}
-          onDateChange={getAppointmentsByRange}
-          onViewChange={getAppointmentsByRange}
+          onRangeChange={(info) => void fetchRange(info.range)}
+          // onDateChange={getAppointmentsByRange}
+          // onViewChange={getAppointmentsByRange}
           renderAgendaEvent={props => renderCalendarEvent(props.occurrence, "agenda", navigate, updateStatus, handleDelete)}
           apiRef={apiRef}
           scrollToHour={(new Date()).getHours()}
