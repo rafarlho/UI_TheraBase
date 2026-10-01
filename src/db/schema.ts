@@ -30,6 +30,7 @@ export const person = pgTable("person", {
   name: varchar({length:255}).notNull(),
   active: boolean().notNull().default(true),
   birthDate: date("birth_date").notNull(),
+  phoneNumber: varchar("phone_number",{length:9}),
   createdAt: timestamp("created_at",{withTimezone: true}).defaultNow().notNull(),
   updatedAt: timestamp("updated_at",{withTimezone: true}).defaultNow().notNull().$onUpdate(() => new Date()),
 })

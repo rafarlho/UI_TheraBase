@@ -8,11 +8,12 @@ import { toast } from "sonner"
 type CreateDialogProps = {
     open: boolean
     setOpen: (value: boolean) => void,
+    selectedDates: {startDate: Date, endDate: Date} | null
     patientOptions: {id:string, name:string}[]
     refreshData: () => void
 }
 
-function CreateDialog({open, setOpen, patientOptions, refreshData}: CreateDialogProps) {
+function CreateDialog({open, setOpen, patientOptions, refreshData, selectedDates}: CreateDialogProps) {
     const createAppointmentFn = useServerFn(createAppointment)
 
     async function createAppointments(values: AppointementFormValues) {
@@ -32,6 +33,7 @@ function CreateDialog({open, setOpen, patientOptions, refreshData}: CreateDialog
                 <AppointmentForm
                     patientOptions={patientOptions}
                     onSubmit={createAppointments}
+                    selectedDates={selectedDates}
                     closeDialog={() => setOpen(false)}
                 />
             </DialogContent>

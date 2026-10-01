@@ -3,16 +3,17 @@ import { Badge } from '#/components/ui/badge'
 import { Button } from '#/components/ui/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '#/components/ui/card'
 import { Textarea } from '#/components/ui/textarea'
-import type { AppointmentWithPerson } from '#/entities/appointment.entity'
 import { getAllAppointmentsForPatient, getAppointmentDetails, updateAppointment, updateAppointmentStatus } from '#/server/functions/appointments'
 import { createFileRoute, notFound, useBlocker, useNavigate, useRouter } from '@tanstack/react-router'
 import { useServerFn } from '@tanstack/react-start'
-import { differenceInMonths, format, isAfter } from 'date-fns'
-import { ArrowLeft, CalendarX2, ClipboardClock, Edit, ExternalLink, Save, SquareCheckBig } from 'lucide-react'
+import { format, isAfter } from 'date-fns'
+import { ArrowLeft, Edit, ExternalLink, Save } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { pt } from "date-fns/locale"
 import UpdateDialog from '#/components/schedule/update-dialog'
+import { displayAgeByMonths } from '#/helpers/date-helper'
+import { statusLabels } from '#/utils/appointment-status'
 
 export const Route = createFileRoute('/_app/schedule/$id/')({
   component: RouteComponent,
@@ -60,8 +61,8 @@ function RouteComponent() {
     router.invalidate()
   }
 
-  async function updateStatus(status: "finished"|"canceled"|"not_started") {
-    await updateAppointmentStatusFn({data:{id: appointment.id, status}})
+  async function updateStatus(appointmentStatus:  "finished"|"canceled"|"not_started") {
+    await updateAppointmentStatusFn({data:{id: appointment.id, status:appointmentStatus}})
     toast.success("Estado da sessão atualizado com sucesso")
     router.invalidate()
   }
@@ -94,7 +95,7 @@ function RouteComponent() {
                 <p>Localização: <b>{appointment.therapistPerson.clinic}</b></p>
                 <p>Processo: <b>{appointment.therapistPerson.process}</b></p>
                 <p>Entidade: <b>{appointment.therapistPerson.entity}</b></p>
-                <p>Idade: <b>{displayAge(differenceInMonths(new Date(), new Date(appointment.therapistPerson.person.birthDate)))}</b></p>
+                <p>Idade: <b>{displayAgeByMonths(appointment.therapistPerson.person.birthDate)}</b></p>
                 <p>Diagonóstico Clínico Terapêutico: <b>{appointment.therapistPerson.therapeuticalDiagnosis || "Não definido"}</b></p>
                 <p>Diagonóstico Clínico: <b>{appointment.therapistPerson.clinicalDiagnosis || "Não definido"}</b></p>
               </div>
@@ -159,17 +160,3 @@ function RouteComponent() {
     </div>
   </main>
 }
-
-
-function displayAge(months: number) {
-  if(months < 12) return months + " meses"
-  const years = Math.floor(months/12)
-  if(years === 1) return "1 ano"
-  return years + " anos"
-}
-
-const statusLabels: Record<AppointmentWithPerson["status"], {name: string, icon:React.ReactElement}> = {
-    not_started:{name: 'Por iniciar', icon:<ClipboardClock /> },
-    canceled: {name: 'Cancelada', icon:<CalendarX2/> },
-    finished: {name: 'Terminada', icon:<SquareCheckBig/> },
-  }
