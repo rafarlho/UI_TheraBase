@@ -190,7 +190,9 @@ function renderCalendarEvent(
         'w-full h-full p-1 border rounded-md', 
         appointment!.status === "not_started" ? "bg-accent border-secondary-foreground" : 
         appointment!.status === "canceled" ? "bg-red-500/20 border-red-500" : "bg-primary/20 border-primary"
-      )}>
+      )}
+      asChild
+      >
         <div className='flex flex-row justify-between py-1 w-full overflow-hidden opacity-100'>
           <div className='flex items-center gap-5'>
             {view === "agenda" && (
