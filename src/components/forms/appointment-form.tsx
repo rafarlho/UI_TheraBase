@@ -4,11 +4,11 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "../ui/form"
 import { Input } from "../ui/input"
 import { Button } from "../ui/button"
-import { Cross, Plus, Save, X } from "lucide-react"
+import { Save } from "lucide-react"
 import { Textarea } from "../ui/textarea"
-import { format } from "date-fns"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
-import { useState } from "react"
+import { differenceInMinutes, format } from "date-fns"
+import { Combobox, ComboboxContent, ComboboxEmpty, ComboboxInput, ComboboxItem, ComboboxList } from "../ui/combobox"
+import { useRef } from "react"
 
 z.config(z.locales.pt())
 const appointmentFormSchema = z.object({
@@ -25,56 +25,67 @@ type AppointementFormProps = {
     onSubmit: (values:AppointementFormValues) => void ,
     patientOptions: { id: string; name: string }[],
     isEdit?: boolean
+    selectedDates: {startDate: Date, endDate: Date} | null
     closeDialog:() => void
 }
 
-function AppointmentForm({defaultValues, onSubmit, patientOptions, closeDialog, isEdit = false}: AppointementFormProps) {
+function AppointmentForm({defaultValues, onSubmit, patientOptions, closeDialog, selectedDates, isEdit = false}: AppointementFormProps) {
     if(!defaultValues)
-        defaultValues = {
-            date: new Date(),
-            duration: 45,
-            notes: "",
-            therapistPersonId:""
-        }
+        if(selectedDates) defaultValues = {
+                date: selectedDates.startDate,
+                duration: differenceInMinutes(selectedDates.endDate, selectedDates.startDate),
+                notes: "",
+                therapistPersonId:""
+            }
+        else
+            defaultValues = {
+                date: new Date(),
+                duration: 45,
+                notes: "",
+                therapistPersonId:""
+            }
 
     const form = useForm<AppointementFormValues>({
         resolver: zodResolver(appointmentFormSchema),
         defaultValues
     })
 
-    
-    
-
-    return (
-        <Form {...form}>
+    const containerRef = useRef<HTMLDivElement>(null)
+    return (<div ref={containerRef}>
+        <Form {...form} >
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                     {!isEdit && (
                         <div className="flex gap-2 items-end">
-                            <FormField
-                                control={form.control}
-                                name="therapistPersonId"
-                                render={({field}) => (
-                                    <FormItem className="w-full">
-                                        <FormLabel>Paciente</FormLabel>
-                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                            <FormControl>
-                                            <SelectTrigger className="w-full">
-                                                    <SelectValue placeholder="Seleciona um paciente" />
-                                                </SelectTrigger>
-                                            </FormControl>
-                                            <SelectContent>
-                                                {patientOptions.map((option) => (
-                                                    <SelectItem key={option.id} value={option.id}>
-                                                        {option.name}
-                                                    </SelectItem>
-                                                ))}
-                                                </SelectContent>
-                                        </Select>
-                                        <FormMessage/>
-                                    </FormItem>
-                                )}
-                            />
-                        </div>
+                        <FormField
+                            control={form.control}
+                            name="therapistPersonId"
+                            render={({ field }) => (
+                                <FormItem className="w-full">
+                                    <FormLabel>Paciente</FormLabel>
+
+                                    <Combobox
+                                        items={patientOptions}
+                                        itemToStringValue={(option) => option.id}
+                                        itemToStringLabel={(option) => option.name}
+                                        value={patientOptions.find((o) => o.id === field.value) ?? null}
+                                        onValueChange={field.onChange}
+                                    >
+                                        <FormControl><ComboboxInput placeholder="Seleciona um paciente"/></FormControl>
+                                        <ComboboxContent container={containerRef}>
+                                            <ComboboxEmpty>Nenhum paciente encontrado.</ComboboxEmpty>
+                                            <ComboboxList> 
+                                                {(option) => (
+                                                    <ComboboxItem key={option.id} value={option.id}>{option.name}</ComboboxItem>
+                                                )}
+                                            </ComboboxList>
+                                        </ComboboxContent>
+                                    </Combobox>
+
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    </div>
                 )}
                 <FormField 
                     control={form.control}
@@ -128,7 +139,7 @@ function AppointmentForm({defaultValues, onSubmit, patientOptions, closeDialog, 
                 </div>
             </form>
         </Form>
-    )
+    </div>)
 }
 
 export default AppointmentForm

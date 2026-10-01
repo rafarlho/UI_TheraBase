@@ -13,6 +13,7 @@ const patientFormSchema = z.object({
     name: z.string().min(1,"Campo de preenchimento obrigatório"),
     birthDate: z.date({error: "Campo de preenchimento obrigatório"}),
     clinic: z.string().min(1,"Campo de preenchimento obrigatório"),
+    phoneNumber: z.string().min(9,"Campo de preenchimento obrigatório"),
     process: z.number().min(1,"Campo de preenchimento obrigatório"),
     entity: z.string().min(1,"Campo de preenchimento obrigatório"),
     therapeuticalDiagnosis: z.string().optional(),
@@ -34,6 +35,7 @@ function PatientForm({defaultValues, onSubmit, closeDialog}: PatientFormProps) {
             clinic:"",
             entity:"",
             name:"",
+            phoneNumber:"",
             process:0,
             clinicalDiagnosis:"",
             therapeuticalDiagnosis:"",
@@ -72,6 +74,19 @@ function PatientForm({defaultValues, onSubmit, closeDialog}: PatientFormProps) {
                                     value={format(field.value, "yyyy-MM-dd")}
                                     onChange={(e) => field.onChange(e.target.value ? new Date(e.target.value) : undefined)}
                                 />
+                            </FormControl>
+                            <FormMessage/>
+                        </FormItem>
+                    )}
+                />
+                <FormField 
+                    control={form.control}
+                    name="phoneNumber"
+                    render={({field}) => (
+                        <FormItem>
+                            <FormLabel>Contacto</FormLabel>
+                            <FormControl>
+                                <Input {...field}/>
                             </FormControl>
                             <FormMessage/>
                         </FormItem>

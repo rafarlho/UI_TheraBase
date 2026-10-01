@@ -7,6 +7,6 @@ export type Person = InferSelectModel<typeof person>
 export type NewPerson = InferInsertModel<typeof person>
 export type PersonWithTherapist = Person & {
   therapistPerson: (TherapistPerson & {
-    therapist: Therapist
+    therapist: Therapist | null
   }) | null
 }

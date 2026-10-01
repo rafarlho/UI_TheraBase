@@ -1,14 +1,13 @@
 import { Badge } from '#/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
-import type { AppointmentWithPerson } from '#/entities/appointment.entity'
-import { getAllAppointmentsForPatient, getByTherapistAndDate } from '#/server/functions/appointments'
+import { displayAgeByMonths } from '#/helpers/date-helper'
+import { getByTherapistAndDate } from '#/server/functions/appointments'
 import { getCurrentSession } from '#/server/functions/auth'
+import { statusLabels } from '#/utils/appointment-status'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { useServerFn } from '@tanstack/react-start'
-import { differenceInMonths, endOfWeek, format, isAfter, isBefore, isSameDay, startOfWeek } from 'date-fns'
+import { endOfWeek, format,isSameDay, startOfWeek } from 'date-fns'
 import { pt } from "date-fns/locale"
-import { Calendar, CalendarX, CalendarX2, CheckSquareIcon, ClipboardClock, Clock, SquareCheckBig } from 'lucide-react'
-import { toast } from 'sonner'
+import { Calendar, CalendarX, CheckSquareIcon, Clock } from 'lucide-react'
 
 export const Route = createFileRoute('/_app/')({
   component: RouteComponent,
@@ -30,7 +29,6 @@ function RouteComponent() {
   })
   const weeksPatients = Array.from(weeksPatientsMap.values())
 
-  const getAllAppointmentsForPatientFn = useServerFn(getAllAppointmentsForPatient)
 
   const navigate = useNavigate()
 
@@ -57,15 +55,6 @@ function RouteComponent() {
       value: weekAppointments.filter(a=> a.status === "canceled").length
     },
   ]
-
-  async function navigateToPatient(id: string) {
-    const allAppointment = await getAllAppointmentsForPatientFn({data:{id}})
-    const finishedAppointments = allAppointment.filter(a => a.status === "finished" && isBefore(a.date, new Date()))
-    const toAttendAppointments = allAppointment.filter(a => a.status === "not_started" && isAfter(a.date, new Date()))
-    if(finishedAppointments.length) navigate({to: `/schedule/${finishedAppointments[finishedAppointments.length-1].id}` })
-    else if(toAttendAppointments.length) navigate({to: `/schedule/${toAttendAppointments[toAttendAppointments.length-1].id}` })
-    else toast.info("Não existem consultas para o paciente selecionado")
-  }
 
   return <main className="h-dvh w-full p-10 flex flex-col ">
     <h1 className='font-heading text-3xl font-bold'>Olá, {session?.name.split(" ")[0]}!</h1>
@@ -112,11 +101,11 @@ function RouteComponent() {
               <li 
                 key={_i} 
                 className="bg-primary/20 p-2 rounded-sm my-1 cursor-pointer flex flex-wrap justify-between gap-2"
-                onClick={()=> navigateToPatient(p.id)}
+                onClick={()=> navigate({to: `/patients/${p.person.id}`})}
               >
                 <p>{p.person.name}</p>
                 <p>{p.entity}</p>
-                <p>{displayAge(differenceInMonths(new Date(), new Date(p.person.birthDate)))}</p>
+                <p>{displayAgeByMonths(p.person.birthDate)}</p>
               </li>
             ))}
           </ul>
@@ -126,16 +115,3 @@ function RouteComponent() {
 
   </main>
 }
-
-function displayAge(months: number) {
-  if(months < 12) return months + " meses"
-  const years = Math.floor(months/12)
-  if(years === 1) return "1 ano"
-  return years + " anos"
-}
-
-const statusLabels: Record<AppointmentWithPerson["status"], {name: string, icon:React.ReactElement}> = {
-    not_started:{name: 'Por iniciar', icon:<ClipboardClock/> },
-    canceled: {name: 'Cancelada', icon:<CalendarX2/> },
-    finished: {name: 'Terminada', icon:<SquareCheckBig/> },
-  }

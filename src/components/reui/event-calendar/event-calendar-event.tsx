@@ -484,7 +484,6 @@ function EventCalendarEvent<TData = unknown>({
     className: cn(
       "group/ec-event text-foreground relative flex w-full min-w-0 cursor-pointer touch-none items-center overflow-hidden text-start select-none",
       "focus-visible:ring-ring/50 outline-none focus-visible:ring-2",
-      "border border-1 border-primary",
       preview && "pointer-events-none",
       view === "agenda"
         ? // plain list row: color lives in the dot badge, not a tinted pill;

@@ -5,6 +5,13 @@ import { requireTherapist } from "../auth";
 import { format } from "date-fns";
 import { therapistPersonRepository } from "#/repositories/therapist-person.repository";
 
+export const getPersonById = createServerFn({method: "GET"})
+    .validator(z.object({id: z.uuid()}))
+    .handler(async ({data}) => {
+        await requireTherapist()
+        return personRepository.findById(data.id)
+    })
+
 export const getTherapistPatients = createServerFn({method: "GET"})
     .handler(async () => {
         const therapist = await requireTherapist()
@@ -36,14 +43,14 @@ export const updatePatient = createServerFn({method: "POST"})
     .validator(z.object({
         id: z.uuid(),
         name: z.string().optional(),
-        birthDate: z.string().optional()
-
+        birthDate: z.date().optional(),
+        phoneNumber: z.string().optional()
     }))
     .handler(async ({data}) =>{
         const therapist = await requireTherapist()
         const therapistPerson = await therapistPersonRepository.getPatientsByTherapistIdAndPersonId(therapist.id, data.id)
         if(!therapistPerson) throw new Error("Paciente não está associado ao terapeuta atual.") 
-        return personRepository.update(therapist.id,data.id, {...data, birthDate: data.birthDate ?format(data.birthDate, "yyyy-MM-dd"): undefined})
+        return personRepository.update(therapist.id,data.id, {...data, birthDate: data.birthDate ? format(data.birthDate, "yyyy-MM-dd"): undefined})
     })
 
 export const createPerson = createServerFn({method: "POST"})
