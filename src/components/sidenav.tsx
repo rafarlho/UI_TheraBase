@@ -1,8 +1,8 @@
 import { ChevronsLeft, ChevronsRight, Clock, Cookie, FileUser, Handshake, Home, Moon, ShieldCheck, Sun } from "lucide-react"
 import { useTheme } from "./theme-provider"
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "./ui/sidebar"
-import DBNameCharcoal from "@/assets/DBNameCharcoal.png"
-import DBNameWhite from "@/assets/DBNameOffWhite.png"
+import LogoTBblack from "@/assets/LogoTBblack.png"
+import LogoTBbwhite from "@/assets/LogoTBwhite.png"
 import { Link } from "@tanstack/react-router"
 import BetterAuthHeader from "#/integrations/better-auth/header-user"
 import { useEffect, useState } from "react"
@@ -19,7 +19,7 @@ function Sidenav() {
             <SidebarHeader className="flex flex-row items-center">
                 {mounted && 
                     (open ? 
-                        <img alt="Diana Botelho Logo" className="max-h-20 h-20" src={resolvedTheme==="light" ? DBNameCharcoal : DBNameWhite}/>
+                        <img alt="Diana Botelho Logo" className="max-h-20 h-20" src={resolvedTheme==="light" ? LogoTBblack : LogoTBbwhite}/>
                         :
                         <img alt="Diana Botelho Logo" className="max-h-20" src="/DB_Logo_Round.png"/>
                     )
