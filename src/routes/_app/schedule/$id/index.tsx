@@ -82,29 +82,49 @@ function RouteComponent() {
       </AlertDialogContent>
     </AlertDialog>
     <small className="cursor-pointer flex border max-w-max py-1 rounded-sm  px-2 items-center gap-1" onClick={()=>router.history.back()}><ArrowLeft size={20}/> Voltar</small>
-    <Button type='button' className='text-2xl w-fit mt-5' variant='link' onClick={()=> navigate({to: `/patients/${patient.id}`})}>{patient.name}</Button> 
     <div className='grid lg:grid-cols-2 gap-10 mt-5 flex-1 min-h-0'> 
       <section id="selected-appointment">
         <Card>
           <CardHeader>
-            <CardTitle>{patient.name}</CardTitle>
-            <CardDescription className='flex justify-between'>
-              <div>
-                <p>Início: <b>{format(appointment.date, "HH:mm 'de' EEEE, d 'de' MMMM 'de'  yyyy", {locale: pt}) }</b></p>
-                <p>Duração: <b>{appointment.duration} minutos</b></p>
-                <p>Localização: <b>{appointment.therapistPerson.clinic}</b></p>
-                <p>Processo: <b>{appointment.therapistPerson.process}</b></p>
-                <p>Entidade: <b>{appointment.therapistPerson.entity}</b></p>
-                <p>Idade: <b>{displayAgeByMonths(appointment.therapistPerson.person.birthDate)}</b></p>
-                <p>Diagonóstico Clínico Terapêutico: <b>{appointment.therapistPerson.therapeuticalDiagnosis || "Não definido"}</b></p>
-                <p>Diagonóstico Clínico: <b>{appointment.therapistPerson.clinicalDiagnosis || "Não definido"}</b></p>
+            <CardTitle onClick={()=> navigate({to: `/patients/${patient.id}`})} className='text-primary text-2xl w-fit hover:underline cursor-pointer'>{patient.name}</CardTitle>
+            <CardDescription className='grid grid-cols-3 gap-5 text-lg'>
+              <div className='col-span-2'>
+                <p>Início</p>
+                <b>{format(appointment.date, "HH:mm 'de' EEEE, d 'de' MMMM 'de'  yyyy", {locale: pt}) }</b>
               </div>
-              <div>
-                <Badge className="w-fit text-lg" variant={appointment.status === 'not_started' ? 'secondary' : appointment.status === 'canceled' ? "destructive" : 'default'}>
+              <Badge className="w-fit text-lg justify-self-center" variant={appointment.status === 'not_started' ? 'secondary' : appointment.status === 'canceled' ? "destructive" : 'default'}>
                   {statusLabels[appointment.status].icon}
                   {statusLabels[appointment.status].name}
-                </Badge>
+              </Badge>
+              <div>
+                <p>Duração</p>
+                <b>{appointment.duration} minutos</b>
               </div>
+              <div>
+                <p>Localização</p>
+                <b>{appointment.therapistPerson.clinic}</b>
+              </div>
+              <div>
+                <p>Processo</p>
+                <b>{appointment.therapistPerson.process}</b>
+              </div>
+              <div>
+                <p>Entidade</p>
+                <b>{appointment.therapistPerson.entity}</b>
+              </div>
+              <div>
+                <p>Idade</p>
+                <b>{displayAgeByMonths(appointment.therapistPerson.person.birthDate)}</b>
+              </div>
+              <div className='col-span-3'>
+                <p>Diagonóstico Clínico Terapêutico</p>
+                <b>{appointment.therapistPerson.therapeuticalDiagnosis || "Não definido"}</b>
+              </div>
+              <div className='col-span-3'>
+                <p>Diagonóstico Clínico</p>
+                <b>{appointment.therapistPerson.clinicalDiagnosis || "Não definido"}</b>
+              </div>
+              
             </CardDescription>
           </CardHeader>
           <CardContent className='flex gap-2 items-center'>

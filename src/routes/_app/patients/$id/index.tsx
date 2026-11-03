@@ -95,22 +95,43 @@ function RouteComponent() {
         {removeDialog({handleRemovePatient, setOpenRemoveDialog})}
     </Dialog>
     <small className="cursor-pointer flex border max-w-max py-1 rounded-sm  px-2 items-center gap-1" onClick={()=>router.history.back()}><ArrowLeft size={20}/> Voltar</small>
-    <h1 className='text-2xl mt-5'>Paciente: <b>{patient.name}</b></h1>
     <div className='grid lg:grid-cols-2 gap-10 mt-5 flex-1 min-h-0'> 
       <section id="selected-appointment">
         <Card>
           <CardHeader>
-            <CardTitle>{patient.name}</CardTitle>
-            <CardDescription className='flex justify-between'>
+            <CardTitle className='grid grid-cols-3 gap-5 text-2xl'>{patient.name}</CardTitle>
+            <CardDescription className='grid grid-cols-3 gap-5 text-lg'>
               <div>
-                <p>Idade: <b>{displayAgeByMonths(patient.birthDate)}</b></p>
-                <p>Data de nascimento: <b>{format(patient.birthDate,"yyyy-MM-dd")}</b></p>
-                <p>Contacto: <b>{patient.phoneNumber}</b></p>
-                <p>Clinica: <b>{patient.therapistPerson?.clinic}</b></p>
-                <p>Processo: <b>{patient.therapistPerson?.process}</b></p>
-                <p>Entidade: <b>{patient.therapistPerson?.entity}</b></p>
-                <p>Diagonóstico Clínico Terapêutico: <b>{patient.therapistPerson?.therapeuticalDiagnosis || "Não definido"}</b></p>
-                <p>Diagonóstico Clínico: <b>{patient.therapistPerson?.clinicalDiagnosis || "Não definido"}</b></p>
+                <p>Idade</p>
+                <b>{displayAgeByMonths(patient.birthDate)}</b>
+              </div>
+              <div>
+                <p>Data de nascimento</p>
+                <b>{format(patient.birthDate,"yyyy-MM-dd")}</b>
+              </div>
+              <div>
+                <p>Contacto</p>
+                <b>{patient.phoneNumber}</b>
+              </div>
+              <div>
+                <p>Clinica</p>
+                <b>{patient.therapistPerson?.clinic}</b>
+              </div>
+              <div>
+                <p>Processo</p>
+                <b>{patient.therapistPerson?.process}</b>
+              </div>
+              <div>
+                <p>Entidade</p>
+                <b>{patient.therapistPerson?.entity}</b>
+              </div>
+              <div className='col-span-3'>
+                <p>Diagonóstico Clínico Terapêutico</p>
+                <b>{patient.therapistPerson?.therapeuticalDiagnosis || "Não definido"}</b>
+              </div>
+              <div className='col-span-3'>
+                <p>Diagonóstico Clínico</p>
+                <b>{patient.therapistPerson?.clinicalDiagnosis || "Não definido"}</b>
               </div>
             </CardDescription>
           </CardHeader>
