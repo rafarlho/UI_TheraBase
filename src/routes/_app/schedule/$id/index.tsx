@@ -82,7 +82,7 @@ function RouteComponent() {
       </AlertDialogContent>
     </AlertDialog>
     <small className="cursor-pointer flex border max-w-max py-1 rounded-sm  px-2 items-center gap-1" onClick={()=>router.history.back()}><ArrowLeft size={20}/> Voltar</small>
-    <h1 className='text-2xl mt-5'>Paciente: <b>{patient.name}</b></h1>
+    <Button type='button' className='text-2xl w-fit mt-5' variant='link' onClick={()=> navigate({to: `/patients/${patient.id}`})}>{patient.name}</Button> 
     <div className='grid lg:grid-cols-2 gap-10 mt-5 flex-1 min-h-0'> 
       <section id="selected-appointment">
         <Card>
