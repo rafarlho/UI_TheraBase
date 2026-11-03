@@ -1,23 +1,25 @@
 import type { PatientFormValues } from '#/components/forms/patient-form'
 import PatientForm from '#/components/forms/patient-form'
+import { MarkdownEditor } from '#/components/markdown-editor'
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '#/components/ui/alert-dialog'
 import { Badge } from '#/components/ui/badge'
 import { Button } from '#/components/ui/button'
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from '#/components/ui/card'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '#/components/ui/dialog'
-import { Textarea } from '#/components/ui/textarea'
 import type { PersonWithTherapist } from '#/entities/person.entity'
 import { displayAgeByMonths } from '#/helpers/date-helper'
 import { getAllAppointmentsForPatient } from '#/server/functions/appointments'
 import { getPersonById, updatePatient } from '#/server/functions/persons'
 import { getTherapistPatientsById, removePatientFromTherapist, updateTherapistPerson } from '#/server/functions/therapist-person'
 import { statusLabels } from '#/utils/appointment-status'
-import { createFileRoute, notFound, useNavigate, useRouter } from '@tanstack/react-router'
+import { createFileRoute, notFound, useBlocker, useNavigate, useRouter } from '@tanstack/react-router'
 import { useServerFn } from '@tanstack/react-start'
 import { format } from 'date-fns'
 import { pt } from 'date-fns/locale'
 import { ArrowLeft, Edit, ExternalLink, Save, Trash } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
+
 
 export const Route = createFileRoute('/_app/patients/$id/')({
   component: RouteComponent,
@@ -43,11 +45,10 @@ function RouteComponent() {
   
   const [openEditDialog, setOpenEditDialog] = useState(false)
   const [openRemoveDialog, setOpenRemoveDialog] = useState(false)
-  const [anamnesis, setAnamnesis] = useState(patient.therapistPerson?.anamnesis ?? "")
+  const [anamnesis, setAnamnesis] = useState(patient.therapistPerson?.anamnesis ?? ANAMNESIS_TEMPLATE)
+  const [savedAnamnesis, setSavedAnamnesis] = useState(patient.therapistPerson?.anamnesis ?? ANAMNESIS_TEMPLATE)
 
-
-  const enableAnamnesis = (patient.therapistPerson?.anamnesis ?? "") === anamnesis 
-  
+  const isDirty = anamnesis !== savedAnamnesis
 
   const updateTherapistPersonFn = useServerFn(updateTherapistPerson)
   const updatePersonFn = useServerFn(updatePatient)
@@ -76,6 +77,7 @@ function RouteComponent() {
 
   async function updateAnamnesis() {
     await updateTherapistPersonFn({data:{therapistPersonId:patient.therapistPerson!.id, anamnesis}})
+    setSavedAnamnesis(anamnesis)
     toast.success("Anamnese atualizada com sucesso")
     router.invalidate()
   }
@@ -86,6 +88,12 @@ function RouteComponent() {
       router.history.back()
       toast.success(`O paciente foi removido com sucesso`)
   }
+
+  const {proceed, reset, status } = useBlocker({
+      shouldBlockFn: () => isDirty,
+      enableBeforeUnload: isDirty,
+      withResolver: true
+    })
 
   return <main className='p-10 flex flex-col h-dvh overflow-hidden w-full' id="detailed-appointment-page relative">
     {openEditDialog &&  updateDialog(
@@ -106,9 +114,21 @@ function RouteComponent() {
     <Dialog open={openRemoveDialog}>
         {removeDialog({handleRemovePatient, setOpenRemoveDialog})}
     </Dialog>
+    <AlertDialog open={status === 'blocked'}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Alterações na anamnese não foram guardadas</AlertDialogTitle>
+          <AlertDialogDescription>Fizeste alterações na anamnese e não as guardaste. Queres continuar?</AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel onClick={reset}>Cancelar</AlertDialogCancel>
+          <AlertDialogAction onClick={proceed}>Sair mesmo assim</AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
     <small className="cursor-pointer flex border max-w-max py-1 rounded-sm  px-2 items-center gap-1" onClick={()=>router.history.back()}><ArrowLeft size={20}/> Voltar</small>
     <div className='grid lg:grid-cols-2 gap-10 mt-5 flex-1 min-h-0'> 
-      <section id="selected-appointment">
+      <section id="selected-appointment" className='h-full  min-h-0 overflow-auto flex flex-col gap-2'> 
         <Card>
           <CardHeader>
             <CardTitle className='text-2xl'>{patient.name}</CardTitle>
@@ -147,13 +167,12 @@ function RouteComponent() {
               </div>
             </CardDescription>
           </CardHeader>
-          <CardContent className='flex gap-2 items-center'>
-            <Textarea 
-              className="text-lg!"
-              value={anamnesis} 
-              onChange={e => setAnamnesis(e.target.value)}
-            />
-            <Button disabled={enableAnamnesis} onClick={updateAnamnesis}><Save/></Button>
+          <CardContent className='flex flex-col gap-2 items-end'>
+            <MarkdownEditor value={anamnesis} onChange={setAnamnesis} onReady={md => {
+              setAnamnesis(md)
+              setSavedAnamnesis(md)
+            }} />
+            <Button disabled={!isDirty} onClick={updateAnamnesis}><Save/> Guardar anamnese</Button> 
           </CardContent>
           <CardAction className='px-5 flex justify-between w-full'>
             <Button variant={"outline"} onClick={()=>setOpenEditDialog(true)}><Edit/> Alterar</Button>
@@ -223,3 +242,34 @@ function removeDialog({handleRemovePatient, setOpenRemoveDialog}: {handleRemoveP
         </DialogContent>
     )
 }
+
+const ANAMNESIS_TEMPLATE = `#### 1. INFORMAÇÕES DO UTENTE
+- Nome completo:
+- Data de nascimento:
+- Profissão / Ocupação:
+- Escolaridade:
+- Contacto:
+- Agregado familiar:
+- Data da anamnese:
+
+#### 2. MOTIVO DA CONSULTA
+
+
+#### 3. HISTÓRIA CLÍNICA
+- Intercorrências gestacionais:
+- Condição de saúde ou diagnóstico relevante:
+- Cirurgias / internamento:
+- Medicação habitual:
+- Alterações auditivas ou visuais:
+
+#### 4. HISTÓRICO TERAPÊUTICO
+- Histórico de TF:
+- Outras especialidades:
+
+#### 5. AUTONOMIA E FUNCIONALIDADE
+- Interesses:
+- Dependência nas AVD's:
+
+#### OBSERVAÇÕES
+
+` 
