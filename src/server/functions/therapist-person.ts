@@ -33,6 +33,7 @@ export const updateTherapistPerson  = createServerFn({method: "POST"})
         entity: z.string().optional(),
         therapeuticalDiagnosis: z.string().optional(),
         clinicalDiagnosis: z.string().optional(),
+        anamnesis: z.string().optional()
     }))
     .handler(async ({data}) => {
         const therapist = await requireTherapist()

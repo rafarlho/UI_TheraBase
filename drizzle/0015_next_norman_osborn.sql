@@ -1,0 +1,1 @@
+ALTER TABLE "therapist_person" ADD COLUMN "anamnesis" varchar;
