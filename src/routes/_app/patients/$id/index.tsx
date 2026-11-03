@@ -4,6 +4,7 @@ import { Badge } from '#/components/ui/badge'
 import { Button } from '#/components/ui/button'
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from '#/components/ui/card'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '#/components/ui/dialog'
+import { Textarea } from '#/components/ui/textarea'
 import type { PersonWithTherapist } from '#/entities/person.entity'
 import { displayAgeByMonths } from '#/helpers/date-helper'
 import { getAllAppointmentsForPatient } from '#/server/functions/appointments'
@@ -14,7 +15,7 @@ import { createFileRoute, notFound, useNavigate, useRouter } from '@tanstack/rea
 import { useServerFn } from '@tanstack/react-start'
 import { format } from 'date-fns'
 import { pt } from 'date-fns/locale'
-import { ArrowLeft, Edit, ExternalLink, Trash } from 'lucide-react'
+import { ArrowLeft, Edit, ExternalLink, Save, Trash } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
@@ -42,7 +43,11 @@ function RouteComponent() {
   
   const [openEditDialog, setOpenEditDialog] = useState(false)
   const [openRemoveDialog, setOpenRemoveDialog] = useState(false)
+  const [anamnesis, setAnamnesis] = useState(patient.therapistPerson?.anamnesis ?? "")
 
+
+  const enableAnamnesis = (patient.therapistPerson?.anamnesis ?? "") === anamnesis 
+  
 
   const updateTherapistPersonFn = useServerFn(updateTherapistPerson)
   const updatePersonFn = useServerFn(updatePatient)
@@ -66,6 +71,13 @@ function RouteComponent() {
     toast.success("Paciente atualizado com sucesso!")
     router.invalidate()
     setOpenEditDialog(false)
+  }
+
+
+  async function updateAnamnesis() {
+    await updateTherapistPersonFn({data:{therapistPersonId:patient.therapistPerson!.id, anamnesis}})
+    toast.success("Anamnese atualizada com sucesso")
+    router.invalidate()
   }
 
   async function handleRemovePatient() {
@@ -99,7 +111,7 @@ function RouteComponent() {
       <section id="selected-appointment">
         <Card>
           <CardHeader>
-            <CardTitle className='grid grid-cols-3 gap-5 text-2xl'>{patient.name}</CardTitle>
+            <CardTitle className='text-2xl'>{patient.name}</CardTitle>
             <CardDescription className='grid grid-cols-3 gap-5 text-lg'>
               <div>
                 <p>Idade</p>
@@ -135,6 +147,14 @@ function RouteComponent() {
               </div>
             </CardDescription>
           </CardHeader>
+          <CardContent className='flex gap-2 items-center'>
+            <Textarea 
+              className="text-lg!"
+              value={anamnesis} 
+              onChange={e => setAnamnesis(e.target.value)}
+            />
+            <Button disabled={enableAnamnesis} onClick={updateAnamnesis}><Save/></Button>
+          </CardContent>
           <CardAction className='px-5 flex justify-between w-full'>
             <Button variant={"outline"} onClick={()=>setOpenEditDialog(true)}><Edit/> Alterar</Button>
             <Button variant={'destructive'} onClick={()=> {setOpenRemoveDialog(true)}}><Trash/>Remover</Button>

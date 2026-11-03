@@ -57,7 +57,7 @@ function RouteComponent() {
 
   async function updateNotes() {
     await updateAppointmentFn({data:{id:appointment.id, notes}})
-    toast.success("Notas da sessão atualizado com sucesso")
+    toast.success("Notas da sessão atualizadas com sucesso")
     router.invalidate()
   }
 
@@ -128,6 +128,7 @@ function RouteComponent() {
           </CardHeader>
           <CardContent className='flex gap-2 items-center'>
             <Textarea
+              className="text-lg!"
               value={notes} 
               placeholder='Não foram encontradas notas para esta consulta, começa a escrever para adicionar'
               onChange={e => setNotes(e.target.value)}
