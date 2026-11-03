@@ -117,14 +117,13 @@ function RouteComponent() {
                 <b>{displayAgeByMonths(appointment.therapistPerson.person.birthDate)}</b>
               </div>
               <div className='col-span-3'>
-                <p>Diagonóstico Clínico Terapêutico</p>
+                <p>Diagonóstico Terapêutico</p>
                 <b>{appointment.therapistPerson.therapeuticalDiagnosis || "Não definido"}</b>
               </div>
               <div className='col-span-3'>
                 <p>Diagonóstico Clínico</p>
                 <b>{appointment.therapistPerson.clinicalDiagnosis || "Não definido"}</b>
               </div>
-              
             </CardDescription>
           </CardHeader>
           <CardContent className='flex gap-2 items-center'>

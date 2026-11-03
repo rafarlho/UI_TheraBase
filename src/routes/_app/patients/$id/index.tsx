@@ -126,7 +126,7 @@ function RouteComponent() {
                 <b>{patient.therapistPerson?.entity}</b>
               </div>
               <div className='col-span-3'>
-                <p>Diagonóstico Clínico Terapêutico</p>
+                <p>Diagonóstico Terapêutico</p>
                 <b>{patient.therapistPerson?.therapeuticalDiagnosis || "Não definido"}</b>
               </div>
               <div className='col-span-3'>
